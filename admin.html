@@ -727,6 +727,25 @@ body {
   border-top: 1px solid var(--border);
   margin: 22px 0;
 }
+
+/* QRコピーボタン */
+.btn-url-copy {
+  padding: 7px 14px;
+  background: white;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-bottom: 6px;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.btn-url-copy:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.btn-url-copy.copied { background: var(--green-light); color: var(--green); border-color: var(--green); }
 </style>
 </head>
 <body>
@@ -1572,12 +1591,14 @@ function renderQR() {
     item.innerHTML =
       '<div class="qr-name">' + escHtml(s.label) + '</div>' +
       '<div class="qr-url">' + escHtml(url) + '</div>' +
+      '<button class="btn-url-copy" id="copybtn_' + s.school + '">🔗 URLをコピー</button>' +
       '<div class="qr-canvas-wrap" id="qr_' + s.school + '"></div>' +
       '<button class="btn-qr-gen" id="genbtn_' + s.school + '">QRコードを生成</button>' +
-      '<a class="btn-qr-dl" id="dl_' + s.school + '" download="QR_' + s.school + '.png">PNGでダウンロード</a>';
+      '<a class="btn-qr-dl" id="dl_' + s.school + '" download="QR_' + s.school + '.png">⬇ PNGでダウンロード</a>';
     // onclick文字列埋め込みでの&エスケープ問題を回避 → クロージャでURLをそのまま渡す
     (function(school, rawUrl, label) {
       item.querySelector('#genbtn_' + school).onclick = function() { genQR(school, rawUrl, label); };
+      item.querySelector('#copybtn_' + school).onclick = function() { copyQrUrl(school, rawUrl); };
     })(s.school, url, s.label);
     grid.appendChild(item);
   });
@@ -1601,6 +1622,38 @@ function genQR(school, url, label) {
       dlBtn.style.display = 'block';
     }
   }, 300);
+}
+
+function copyQrUrl(school, url) {
+  var btn = document.getElementById('copybtn_' + school);
+  navigator.clipboard.writeText(url).then(function() {
+    if (btn) {
+      btn.textContent = '✅ コピーしました';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = '🔗 URLをコピー';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  }).catch(function() {
+    // フォールバック：テキスト選択
+    var ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (btn) {
+      btn.textContent = '✅ コピーしました';
+      btn.classList.add('copied');
+      setTimeout(function() {
+        btn.textContent = '🔗 URLをコピー';
+        btn.classList.remove('copied');
+      }, 2000);
+    }
+  });
 }
 
 // ============================================================
