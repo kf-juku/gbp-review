@@ -769,9 +769,9 @@ body {
   padding: 24px 0;
 }
 .preview-frame-wrap iframe {
-  height: calc(100vh - 57px - 37px - 48px - 24px);
-  min-height: 500px;
-  max-height: 820px;
+  height: calc(100vh - 200px);
+  min-height: 400px;
+  max-height: 900px;
 }
 
 /* ========== 区切り線 ========== */
@@ -1068,7 +1068,7 @@ body {
           <span style="font-size:11px;color:var(--text-muted);">📱 スマートフォン表示</span>
         </div>
         <div class="preview-frame-wrap">
-          <iframe id="previewFrame" src="" style="width:390px;border:none;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:#fff;display:block;"></iframe>
+          <iframe id="previewFrame" src="" style="width:360px;border:none;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:#fff;display:block;"></iframe>
         </div>
       </div>
     </div>
@@ -1123,7 +1123,11 @@ window.addEventListener('DOMContentLoaded', function() {
   if (auth === 'ok') {
     showMain();
   }
-  window.addEventListener('resize', resizePreviewFrame);
+  var _resizeTimer;
+  window.addEventListener('resize', function() {
+    clearTimeout(_resizeTimer);
+    _resizeTimer = setTimeout(resizePreviewFrame, 100);
+  });
   document.getElementById('pwInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') doLogin();
   });
@@ -1258,9 +1262,8 @@ function resizePreviewFrame() {
   if (!frame) return;
   var wrap = frame.closest('.preview-frame-wrap');
   if (!wrap) return;
-  var wh = window.innerHeight;
   var wrapTop = wrap.getBoundingClientRect().top;
-  var h = Math.min(Math.max(wh - wrapTop - 48, 500), 820);
+  var h = Math.min(Math.max(window.innerHeight - wrapTop - 32, 400), 900);
   frame.style.height = h + 'px';
 }
 
@@ -1270,7 +1273,7 @@ function switchTab(id, btn) {
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
   // プレビュータブを開いたら自動ロード
-  if (id === 'tab-preview') { updatePreview(); setTimeout(resizePreviewFrame, 50); }
+  if (id === 'tab-preview') { updatePreview(); setTimeout(resizePreviewFrame, 80); }
 }
 
 function openLog() {
