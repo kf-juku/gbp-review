@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管理画面 - 口コミ支援ツール</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+/* ログイン画面 */
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 40px 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+}
+.login-box h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.login-box .login-sub {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 28px;
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus { border-color: #1A56DB; }
+.btn-login {
+  width: 100%;
+  padding: 14px;
+  background: #1A56DB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.btn-login:hover { background: #1341A8; }
+.login-error {
+  color: #dc2626;
+  font-size: 13px;
+  margin-top: 10px;
+  display: none;
+}
+
+/* メイン画面 */
+#mainApp { display: none; }
+.topbar {
+  background: #1A56DB;
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.topbar h1 { font-size: 18px; font-weight: 700; }
+.btn-logout {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btn-logout:hover { background: rgba(255,255,255,0.3); }
+
+/* タブ */
+.tab-bar {
+  background: white;
+  display: flex;
+  overflow-x: auto;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 16px;
+  gap: 4px;
+  scrollbar-width: none;
+}
+.tab-bar::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.15s;
+}
+.tab-btn:hover { color: #1A56DB; }
+.tab-btn.active {
+  color: #1A56DB;
+  border-bottom-color: #1A56DB;
+}
+
+.tab-content { display: none; padding: 24px 20px; max-width: 800px; margin: 0 auto; }
+.tab-content.active { display: block; }
+
+/* カード */
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.card h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+.card .card-sub {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 16px;
+}
+
+.field-row {
+  margin-bottom: 14px;
+}
+.field-row label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+  margin-bottom: 5px;
+}
+.field-row .form-input { font-size: 14px; }
+
+/* ボタン */
+.btn-save {
+  padding: 11px 24px;
+  background: #1A56DB;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-right: 8px;
+}
+.btn-save:hover { background: #1341A8; }
+.btn-default {
+  padding: 10px 20px;
+  background: white;
+  color: #666;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-default:hover { border-color: #999; color: #333; }
+.btn-add {
+  padding: 8px 16px;
+  background: #e8f0ff;
+  color: #1A56DB;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.btn-add:hover { background: #d0e2ff; }
+.btn-remove {
+  padding: 4px 10px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.btn-remove:hover { background: #fecaca; }
+
+/* 設問エディタ */
+.brand-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.brand-tab {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid #ddd;
+  background: white;
+  color: #666;
+}
+.brand-tab.active {
+  border-color: #1A56DB;
+  background: #EBF2FF;
+  color: #1A56DB;
+}
+.q-block {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+.q-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.q-block-title { font-size: 13px; font-weight: 700; color: #444; }
+.q-type-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f0f0f0;
+  color: #666;
+}
+.q-type-select {
+  font-size: 13px;
+  padding: 4px 8px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+}
+.q-type-select:focus { border-color: #1A56DB; }
+.q-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-move {
+  background: #f3f4f6;
+  border: 1.5px solid #ddd;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 13px;
+  cursor: pointer;
+  color: #555;
+}
+.btn-move:hover { background: #e5e7eb; }
+.btn-delete-q {
+  background: #fff0f0;
+  border: 1.5px solid #fca5a5;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #dc2626;
+}
+.btn-delete-q:hover { background: #fee2e2; }
+.btn-add-question {
+  width: 100%;
+  padding: 10px;
+  margin-top: 4px;
+  border: 2px dashed #93c5fd;
+  border-radius: 8px;
+  background: #eff6ff;
+  color: #1A56DB;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-add-question:hover { background: #dbeafe; }
+.q-text-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid #ddd;
+  border-radius: 7px;
+  font-size: 14px;
+  margin-bottom: 10px;
+  outline: none;
+}
+.q-text-input:focus { border-color: #1A56DB; }
+.choice-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.choice-input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  outline: none;
+}
+.choice-input:focus { border-color: #1A56DB; }
+
+/* プロンプト */
+.prompt-area {
+  width: 100%;
+  min-height: 220px;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  line-height: 1.7;
+}
+.prompt-area:focus { border-color: #1A56DB; }
+
+/* デザイン */
+.color-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.color-picker { width: 44px; height: 38px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; padding: 0; }
+.color-hex {
+  width: 110px;
+  padding: 8px 10px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: monospace;
+  outline: none;
+}
+.color-hex:focus { border-color: #1A56DB; }
+
+/* キャンペーン */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.toggle {
+  position: relative;
+  width: 50px;
+  height: 28px;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #ccc;
+  border-radius: 28px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  top: 4px;
+  left: 4px;
+  transition: transform 0.2s;
+}
+.toggle input:checked + .toggle-slider { background: #1A56DB; }
+.toggle input:checked + .toggle-slider::before { transform: translateX(22px); }
+.toggle-label { font-size: 14px; font-weight: 600; color: #333; }
+
+/* QRコード */
+.qr-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.qr-item {
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  background: white;
+}
+.qr-item .qr-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 4px;
+}
+.qr-item .qr-url {
+  font-size: 11px;
+  color: #888;
+  word-break: break-all;
+  margin-bottom: 10px;
+}
+.qr-canvas-wrap { margin: 10px auto; }
+.btn-qr-gen {
+  padding: 8px 16px;
+  background: #1A56DB;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.btn-qr-gen:hover { background: #1341A8; }
+.btn-qr-dl {
+  padding: 7px 14px;
+  background: white;
+  color: #1A56DB;
+  border: 2px solid #1A56DB;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: none;
+  width: 100%;
+}
+.btn-qr-dl:hover { background: #EBF2FF; }
+
+/* ステータスバー */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #1a1a1a;
+  color: white;
+  padding: 10px 20px;
+  font-size: 13px;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+  z-index: 100;
+  text-align: center;
+}
+.status-bar.show { transform: translateY(0); }
+.status-bar.success { background: #15803d; }
+.status-bar.error { background: #dc2626; }
+
+/* ローディングオーバーレイ */
+.overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.overlay.show { display: flex; }
+.overlay-box {
+  background: white;
+  border-radius: 12px;
+  padding: 28px 32px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+}
+.overlay-spinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #EBF2FF;
+  border-top: 4px solid #1A56DB;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ヘルプツールチップ */
+.help-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  background: #9ca3af;
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-left: 6px;
+  vertical-align: middle;
+  position: relative;
+  flex-shrink: 0;
+}
+.help-badge .tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  white-space: nowrap;
+  z-index: 100;
+  pointer-events: none;
+  max-width: 260px;
+  white-space: normal;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.help-badge:hover .tooltip,
+.help-badge.open .tooltip { display: block; }
+
+/* 全体ヘルプパネル */
+.help-panel {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #0c4a6e;
+  line-height: 1.7;
+}
+.help-panel h3 {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+.help-panel ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.help-panel .help-kurofune-only {
+  color: #b45309;
+  font-size: 12px;
+}
+</style>
+</head>
+<body>
+
+<!-- ログイン画面 -->
+<div id="loginScreen" class="login-wrap">
+  <div class="login-box">
+    <h1>🔐 管理画面</h1>
+    <div class="login-sub">口コミ支援ツール 管理者専用</div>
+    <div class="form-group">
+      <label>パスワード</label>
+      <input type="password" class="form-input" id="pwInput" placeholder="管理者パスワードを入力">
+    </div>
+    <button class="btn-login" onclick="doLogin()">ログイン</button>
+    <div class="login-error" id="loginError">パスワードが違います。</div>
+  </div>
+</div>
+
+<!-- メインアプリ -->
+<div id="mainApp">
+  <div class="topbar">
+    <h1>⚙️ 口コミ支援ツール 管理画面</h1>
+    <button class="btn-logout" onclick="doLogout()">ログアウト</button>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('tab-schools', this)">🏫 教室設定</button>
+    <button class="tab-btn" onclick="switchTab('tab-questions', this)">📝 設問編集</button>
+    <button class="tab-btn" onclick="switchTab('tab-prompt', this)">🤖 プロンプト</button>
+    <button class="tab-btn" onclick="switchTab('tab-design', this)">🎨 デザイン</button>
+    <button class="tab-btn" onclick="switchTab('tab-campaign', this)">🎁 キャンペーン</button>
+    <button class="tab-btn" onclick="switchTab('tab-qr', this)">📱 QRコード</button>
+    <button class="tab-btn" onclick="switchTab('tab-preview', this)">👁 プレビュー</button>
+    <button class="tab-btn" onclick="openLog()">📊 ログ確認</button>
+  </div>
+
+  <!-- 教室設定 -->
+  <div class="tab-content active" id="tab-schools">
+    <div class="card">
+      <h2>🏫 教室別 GBP URL 設定</h2>
+      <div class="card-sub">各教室のGoogleビジネスプロフィール 口コミ投稿URLを設定してください。</div>
+      <div id="schoolFields"></div>
+      <button class="btn-save" onclick="saveSchools()">💾 保存する</button>
+    </div>
+  </div>
+
+  <!-- 設問編集 -->
+  <div class="tab-content" id="tab-questions">
+    <div class="card">
+      <h2>📝 設問・選択肢の編集
+        <span class="help-badge" onclick="this.classList.toggle('open')">?
+          <span class="tooltip">設問タイプ：<br>・single：選択肢から1つ選ぶ<br>・multi：複数選択できる<br>・free：自由記述テキストボックス<br><br>↑↓で設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に戻します（上書き）。</span>
+        </span>
+      </h2>
+      <div class="card-sub">ブランドを選んで設問を編集してください。</div>
+      <div class="brand-tabs">
+        <button class="brand-tab active" onclick="switchBrand('kurofune')">進学塾クロフネ</button>
+        <button class="brand-tab" onclick="switchBrand('ca')">コードアドベンチャー</button>
+      </div>
+      <div id="questionEditor"></div>
+      <button class="btn-save" onclick="saveQuestions()">💾 保存する</button>
+      <button class="btn-default" onclick="resetQuestions()">デフォルトに戻す</button>
+    </div>
+  </div>
+
+  <!-- プロンプト -->
+  <div class="tab-content" id="tab-prompt">
+    <div class="card">
+      <h2>🤖 AIシステムプロンプト</h2>
+      <div class="card-sub">口コミ文を生成する際のAIへの指示文を設定します。ブランドを選んで編集してください。</div>
+      <div class="brand-tabs">
+        <button class="brand-tab active" onclick="switchPromptBrand('kurofune')">進学塾クロフネ</button>
+        <button class="brand-tab" onclick="switchPromptBrand('ca')">コードアドベンチャー</button>
+      </div>
+      <div class="field-row">
+        <textarea class="prompt-area" id="promptArea"></textarea>
+      </div>
+      <div class="field-row" style="margin-top:16px;">
+        <label class="field-label">📝 エピソード欄のサンプルテキスト（薄字ガイド）</label>
+        <input type="text" class="form-input" id="episodePlaceholderInput"
+          placeholder="例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。">
+        <div class="field-hint">アンケート最終画面のテキストエリアに薄字で表示されます。空欄の場合はデフォルト文言を使用します。</div>
+      </div>
+      <button class="btn-save" onclick="savePrompt()">💾 保存する</button>
+      <button class="btn-default" onclick="resetPrompt()">デフォルトに戻す</button>
+    </div>
+  </div>
+
+  <!-- デザイン -->
+  <div class="tab-content" id="tab-design">
+    <div class="card">
+      <h2>🎨 デザイン設定</h2>
+      <div class="card-sub">各ブランドのロゴとブランドカラーを設定します。</div>
+
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#333;">進学塾クロフネ</div>
+      <div class="field-row">
+        <label>ロゴ画像URL</label>
+        <input type="url" class="form-input" id="logoKurofune" placeholder="https://...（未設定の場合は教室名テキストを表示）">
+      </div>
+      <div class="field-row">
+        <label>ブランドカラー</label>
+        <div class="color-row">
+          <input type="color" class="color-picker" id="colorKurofunePicker" value="#1A56DB" oninput="syncColor('kurofune')">
+          <input type="text" class="color-hex" id="colorKurofuneHex" value="#1A56DB" oninput="syncColorFromHex('kurofune')" maxlength="7">
+        </div>
+      </div>
+
+      <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb;">
+
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#333;">コードアドベンチャー</div>
+      <div class="field-row">
+        <label>ロゴ画像URL</label>
+        <input type="url" class="form-input" id="logoCa" placeholder="https://...（未設定の場合は教室名テキストを表示）">
+      </div>
+      <div class="field-row">
+        <label>ブランドカラー</label>
+        <div class="color-row">
+          <input type="color" class="color-picker" id="colorCaPicker" value="#E3A008" oninput="syncColor('ca')">
+          <input type="text" class="color-hex" id="colorCaHex" value="#E3A008" oninput="syncColorFromHex('ca')" maxlength="7">
+        </div>
+      </div>
+
+      <button class="btn-save" onclick="saveDesign()">💾 保存する</button>
+    </div>
+  </div>
+
+  <!-- プレビュー -->
+  <div class="tab-content" id="tab-preview">
+    <div class="card" style="max-width:900px;">
+      <h2>👁 ユーザー画面プレビュー</h2>
+      <div class="card-sub">実際のアンケート画面をここで確認できます。設定変更後は「再読み込み」を押してください。</div>
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+        <div>
+          <label class="field-label" style="margin-bottom:4px;">教室</label>
+          <select class="q-type-select" id="previewSchoolSelect" onchange="updatePreview()">
+            <option value="kurofune_kurihama">クロフネ 久里浜</option>
+            <option value="kurofune_kitakurihama">クロフネ 北久里浜</option>
+            <option value="ca_kurihama">CA 久里浜</option>
+            <option value="ca_kitakurihama">CA 北久里浜</option>
+          </select>
+        </div>
+        <button class="btn-save" style="margin-top:18px;" onclick="updatePreview()">🔄 再読み込み</button>
+      </div>
+      <div style="border:2px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#f9fafb;">
+        <div style="background:#e5e7eb; padding:6px 12px; font-size:12px; color:#666; display:flex; align-items:center; gap:8px;">
+          <span>📱 スマートフォン表示プレビュー</span>
+        </div>
+        <div style="display:flex; justify-content:center; padding:20px; background:#f3f4f6;">
+          <iframe id="previewFrame"
+            src=""
+            style="width:390px; height:700px; border:none; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); background:#fff;"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- キャンペーン -->
+  <div class="tab-content" id="tab-campaign">
+    <div class="card">
+      <h2>🎁 キャンペーン設定</h2>
+      <div class="card-sub">キャンペーンON期間中は、口コミ画面に名前入力欄と特典バナーが表示されます。</div>
+
+      <div class="toggle-row">
+        <label class="toggle">
+          <input type="checkbox" id="campaignActive">
+          <span class="toggle-slider"></span>
+        </label>
+        <span class="toggle-label">キャンペーンを有効にする
+          <span class="help-badge" onclick="this.classList.toggle('open')">?
+            <span class="tooltip">ONにすると口コミ画面に名前入力欄と特典バナーが表示されます。誰が口コミを書いたか確認したい場合やプレゼント配布時に使用してください。</span>
+          </span>
+        </span>
+      </div>
+
+      <div class="field-row">
+        <label>キャンペーン名</label>
+        <input type="text" class="form-input" id="campaignName" placeholder="例：春の口コミキャンペーン">
+      </div>
+      <div class="field-row">
+        <label>開始日</label>
+        <input type="date" class="form-input" id="campaignStart">
+      </div>
+      <div class="field-row">
+        <label>終了日</label>
+        <input type="date" class="form-input" id="campaignEnd">
+      </div>
+      <div class="field-row">
+        <label>特典内容
+          <span class="help-badge" onclick="this.classList.toggle('open')">?
+            <span class="tooltip">口コミ画面に表示する特典の説明文です。<br>例：「図書カード500円分プレゼント」</span>
+          </span>
+        </label>
+        <input type="text" class="form-input" id="campaignReward" placeholder="例：口コミを書いてくれた方に図書カード500円分プレゼント">
+      </div>
+
+      <button class="btn-save" onclick="saveCampaign()">💾 保存する</button>
+    </div>
+  </div>
+
+  <!-- QRコード -->
+  <div class="tab-content" id="tab-qr">
+    <div class="card">
+      <h2>📱 QRコード発行</h2>
+      <div class="card-sub">各教室のQRコードを生成してPNGでダウンロードできます。</div>
+      <div class="qr-grid" id="qrGrid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ステータスバー -->
+<div class="status-bar" id="statusBar"></div>
+
+<!-- ローディングオーバーレイ -->
+<div class="overlay" id="overlay">
+  <div class="overlay-box">
+    <div class="overlay-spinner"></div>
+    <div id="overlayMsg">読み込み中...</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8axUPMp0B0bfwkdyUODxpd0J15v8d5eNm2cyL9oWz-UvnanBAC83-3Tf4ZKkPz1hQ/exec';
+
+// GAS POST ヘルパー（FormData形式でプリフライトを回避）
+function gasPost(payload) {
+  var fd = new FormData();
+  fd.append('body', JSON.stringify(payload));
+  return fetch(GAS_URL, { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); });
+}
+
+var TENANT = 'kurofune';
+var AUTH_KEY = 'gbp_admin_auth';
+
+var SCHOOLS = [
+  { school: 'kurofune_kurihama',     label: '進学塾クロフネ 久里浜教室',    brand: 'kurofune' },
+  { school: 'kurofune_kitakurihama', label: '進学塾クロフネ 北久里浜教室',  brand: 'kurofune' },
+  { school: 'ca_kurihama',           label: 'コードアドベンチャー 久里浜教室',  brand: 'ca' },
+  { school: 'ca_kitakurihama',       label: 'コードアドベンチャー 北久里浜教室', brand: 'ca' }
+];
+
+var _adminData = {};       // GASから取得した管理者設定
+var _editBrand = 'kurofune';
+var _promptBrand = 'kurofune';
+
+// ============================================================
+// ログイン
+// ============================================================
+window.addEventListener('DOMContentLoaded', function() {
+  var auth = sessionStorage.getItem(AUTH_KEY);
+  if (auth === 'ok') {
+    showMain();
+  }
+  document.getElementById('pwInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+});
+
+function doLogin() {
+  var pw = document.getElementById('pwInput').value;
+  if (!pw) return;
+  // エラーメッセージをリセット（前回の通信エラー文言が残らないよう）
+  var errEl = document.getElementById('loginError');
+  errEl.textContent = 'パスワードが違います。';
+  errEl.style.display = 'none';
+  showOverlay('認証中...');
+  gasPost({ action: 'adminAuth', password: pw })
+    .then(function(d) {
+      hideOverlay();
+      if (d.success) {
+        sessionStorage.setItem(AUTH_KEY, 'ok');
+        document.getElementById('loginError').style.display = 'none';
+        showMain();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    })
+    .catch(function() {
+      hideOverlay();
+      document.getElementById('loginError').textContent = '通信エラーが発生しました。';
+      document.getElementById('loginError').style.display = 'block';
+    });
+}
+
+function doLogout() {
+  sessionStorage.removeItem(AUTH_KEY);
+  location.reload();
+}
+
+function showMain() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  // クロフネのみ費用案内を表示
+  if (TENANT === 'kurofune') {
+    var costItem = document.getElementById('helpCostItem');
+    if (costItem) costItem.style.display = 'list-item';
+  }
+  loadAdminConfig();
+}
+
+// ============================================================
+// 設定読み込み
+// ============================================================
+function loadAdminConfig() {
+  showOverlay('設定を読み込んでいます...');
+  fetch(GAS_URL + '?action=getAdminConfig&tenant=' + TENANT)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      hideOverlay();
+      if (d.error) { showStatus('設定の読み込みに失敗しました: ' + d.error, 'error'); return; }
+      _adminData = d;
+      renderSchoolFields();
+      renderQuestionEditor();
+      renderPromptArea();
+      renderDesign();
+      renderCampaign();
+      renderQR();
+    })
+    .catch(function() {
+      hideOverlay();
+      showStatus('通信エラーが発生しました。', 'error');
+    });
+}
+
+// ============================================================
+// タブ切り替え
+// ============================================================
+function updatePreview() {
+  var schoolSel = document.getElementById('previewSchoolSelect');
+  if (!schoolSel) return;
+  var school = schoolSel.value;
+  var frame = document.getElementById('previewFrame');
+  if (!frame) return;
+  // iframeを一旦空にしてから再セット（キャッシュ回避）
+  frame.src = 'about:blank';
+  setTimeout(function() {
+    frame.src = './kuchikomi.html?tenant=' + TENANT + '&school=' + school;
+  }, 50);
+}
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  // プレビュータブを開いたら自動ロード
+  if (id === 'tab-preview') updatePreview();
+}
+
+function openLog() {
+  // ログ確認はタブを切り替えないが、アクティブ状態を他タブから外す
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  var url = (_adminData && _adminData.spreadsheetUrl) ? _adminData.spreadsheetUrl : '';
+  if (url) {
+    window.open(url, '_blank');
+  } else {
+    showStatus('スプレッドシートURLが設定されていません。', 'error');
+  }
+}
+
+// ============================================================
+// 教室設定タブ
+// ============================================================
+function renderSchoolFields() {
+  var wrap = document.getElementById('schoolFields');
+  wrap.innerHTML = '';
+  SCHOOLS.forEach(function(s) {
+    var gbpUrl = (_adminData.schools && _adminData.schools[s.school]) ? _adminData.schools[s.school] : '';
+    var div = document.createElement('div');
+    div.className = 'field-row';
+    div.innerHTML = '<label>' + s.label + '</label>' +
+      '<input type="url" class="form-input" id="gbp_' + s.school + '" value="' + escHtml(gbpUrl) + '" placeholder="https://g.page/r/...">';
+    wrap.appendChild(div);
+  });
+}
+
+function saveSchools() {
+  var schools = {};
+  SCHOOLS.forEach(function(s) {
+    schools[s.school] = document.getElementById('gbp_' + s.school).value.trim();
+  });
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'schools', data: schools });
+}
+
+// ============================================================
+// 設問編集タブ
+// ============================================================
+function switchBrand(brand) {
+  _editBrand = brand;
+  document.querySelectorAll('#tab-questions .brand-tab').forEach(function(b, i) {
+    b.classList.toggle('active', (i === 0 && brand === 'kurofune') || (i === 1 && brand === 'ca'));
+  });
+  renderQuestionEditor();
+}
+
+function renderQuestionEditor() {
+  var qs = (_adminData.questions && _adminData.questions[_editBrand]) ? _adminData.questions[_editBrand] : [];
+  var wrap = document.getElementById('questionEditor');
+  wrap.innerHTML = '';
+  var total = qs.length;
+  qs.forEach(function(q, qi) {
+    var block = document.createElement('div');
+    block.className = 'q-block';
+    block.id = 'qblock_' + qi;
+
+    // ヘッダー：番号 + タイプセレクト + 並び替え + 削除
+    var header = document.createElement('div');
+    header.className = 'q-block-header';
+
+    var title = document.createElement('span');
+    title.className = 'q-block-title';
+    title.textContent = 'Q' + (qi + 1);
+    header.appendChild(title);
+
+    var controls = document.createElement('div');
+    controls.className = 'q-header-controls';
+
+    // タイプセレクト
+    var sel = document.createElement('select');
+    sel.className = 'q-type-select';
+    sel.id = 'qtype_' + qi;
+    [['single','単一選択'],['multi','複数選択'],['free','自由記述']].forEach(function(opt) {
+      var o = document.createElement('option');
+      o.value = opt[0]; o.textContent = opt[1];
+      if (q.type === opt[0]) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.onchange = (function(qIdx) {
+      return function() { onTypeChange(qIdx); };
+    })(qi);
+    controls.appendChild(sel);
+
+    // ↑↓ボタン
+    if (qi > 0) {
+      var upBtn = document.createElement('button');
+      upBtn.className = 'btn-move'; upBtn.textContent = '↑';
+      upBtn.onclick = (function(qIdx){ return function(){ moveQuestion(qIdx, -1); }; })(qi);
+      controls.appendChild(upBtn);
+    }
+    if (qi < total - 1) {
+      var downBtn = document.createElement('button');
+      downBtn.className = 'btn-move'; downBtn.textContent = '↓';
+      downBtn.onclick = (function(qIdx){ return function(){ moveQuestion(qIdx, 1); }; })(qi);
+      controls.appendChild(downBtn);
+    }
+
+    // 削除ボタン
+    var delBtn = document.createElement('button');
+    delBtn.className = 'btn-delete-q'; delBtn.textContent = '✕ 削除';
+    delBtn.onclick = (function(qIdx){ return function(){ deleteQuestion(qIdx); }; })(qi);
+    controls.appendChild(delBtn);
+
+    header.appendChild(controls);
+    block.appendChild(header);
+
+    // 設問文
+    var textInput = document.createElement('input');
+    textInput.className = 'q-text-input';
+    textInput.value = q.text || '';
+    textInput.placeholder = '設問文を入力';
+    textInput.id = 'qtext_' + qi;
+    block.appendChild(textInput);
+
+    // 選択肢エリア（single/multi）
+    var choicesWrap = document.createElement('div');
+    choicesWrap.id = 'choices_' + qi;
+    choicesWrap.style.display = (q.type === 'free') ? 'none' : 'block';
+    (q.choices || []).forEach(function(c, ci) {
+      choicesWrap.appendChild(makeChoiceRow(qi, ci, c));
+    });
+    block.appendChild(choicesWrap);
+
+    var addBtn = document.createElement('button');
+    addBtn.className = 'btn-add';
+    addBtn.id = 'addchoice_' + qi;
+    addBtn.textContent = '+ 選択肢を追加';
+    addBtn.style.display = (q.type === 'free') ? 'none' : 'inline-block';
+    addBtn.onclick = (function(qIdx){ return function(){ addChoice(qIdx); }; })(qi);
+    block.appendChild(addBtn);
+
+    wrap.appendChild(block);
+  });
+
+  // 設問追加ボタン
+  var addQBtn = document.createElement('button');
+  addQBtn.className = 'btn-add-question';
+  addQBtn.textContent = '＋ 設問を追加する';
+  addQBtn.onclick = addQuestion;
+  wrap.appendChild(addQBtn);
+}
+
+function onTypeChange(qi) {
+  var sel = document.getElementById('qtype_' + qi);
+  var isFree = sel.value === 'free';
+  var choicesWrap = document.getElementById('choices_' + qi);
+  var addBtn = document.getElementById('addchoice_' + qi);
+  if (choicesWrap) choicesWrap.style.display = isFree ? 'none' : 'block';
+  if (addBtn) addBtn.style.display = isFree ? 'none' : 'inline-block';
+}
+
+function moveQuestion(qi, dir) {
+  var qs = collectCurrentQuestions();
+  var newIdx = qi + dir;
+  if (newIdx < 0 || newIdx >= qs.length) return;
+  var tmp = qs[qi]; qs[qi] = qs[newIdx]; qs[newIdx] = tmp;
+  if (!_adminData.questions) _adminData.questions = {};
+  _adminData.questions[_editBrand] = qs;
+  renderQuestionEditor();
+}
+
+function deleteQuestion(qi) {
+  var qs = collectCurrentQuestions();
+  if (qs.length === 0) { alert('設問データが読み込まれていません'); return; }
+  if (qs.length <= 1) { alert('設問は最低1つ必要です'); return; }
+  if (!confirm('Q' + (qi + 1) + ' を削除しますか？')) return;
+  qs.splice(qi, 1);
+  if (!_adminData.questions) _adminData.questions = {};
+  _adminData.questions[_editBrand] = qs;
+  renderQuestionEditor();
+}
+
+function addQuestion() {
+  var qs = collectCurrentQuestions();
+  qs.push({ type: 'single', text: '', choices: [''] });
+  if (!_adminData.questions) _adminData.questions = {};
+  _adminData.questions[_editBrand] = qs;
+  renderQuestionEditor();
+}
+
+function collectCurrentQuestions() {
+  var qs = (_adminData.questions && _adminData.questions[_editBrand]) ? _adminData.questions[_editBrand] : [];
+  return qs.map(function(q, qi) {
+    var typeEl = document.getElementById('qtype_' + qi);
+    var type = typeEl ? typeEl.value : q.type;
+    var textEl = document.getElementById('qtext_' + qi);
+    var text = textEl ? textEl.value : q.text;
+    var choices = [];
+    if (type !== 'free') {
+      var wrap = document.getElementById('choices_' + qi);
+      if (wrap) {
+        Array.from(wrap.querySelectorAll('.choice-input')).forEach(function(inp) {
+          if (inp.value.trim()) choices.push(inp.value.trim());
+        });
+      }
+    }
+    return { type: type, text: text, choices: choices };
+  });
+}
+
+function makeChoiceRow(qi, ci, val) {
+  var row = document.createElement('div');
+  row.className = 'choice-row';
+  row.id = 'choicerow_' + qi + '_' + ci;
+  var inp = document.createElement('input');
+  inp.className = 'choice-input';
+  inp.value = val;
+  inp.placeholder = '選択肢';
+  inp.id = 'choice_' + qi + '_' + ci;
+  var btn = document.createElement('button');
+  btn.className = 'btn-remove';
+  btn.textContent = '削除';
+  (function(q, c) { btn.onclick = function() { removeChoice(q, c); }; })(qi, ci);
+  row.appendChild(inp);
+  row.appendChild(btn);
+  return row;
+}
+
+function addChoice(qi) {
+  var wrap = document.getElementById('choices_' + qi);
+  var ci = wrap.children.length;
+  wrap.appendChild(makeChoiceRow(qi, ci, ''));
+}
+
+function removeChoice(qi, ci) {
+  var el = document.getElementById('choicerow_' + qi + '_' + ci);
+  if (el) el.remove();
+  // ci を振り直す
+  var wrap = document.getElementById('choices_' + qi);
+  Array.from(wrap.children).forEach(function(row, newCi) {
+    row.id = 'choicerow_' + qi + '_' + newCi;
+    var inp = row.querySelector('.choice-input');
+    if (inp) inp.id = 'choice_' + qi + '_' + newCi;
+    var btn = row.querySelector('.btn-remove');
+    if (btn) (function(q, c) { btn.onclick = function() { removeChoice(q, c); }; })(qi, newCi);
+  });
+}
+
+function saveQuestions() {
+  var result = collectCurrentQuestions();
+  for (var i = 0; i < result.length; i++) {
+    if (!result[i].text || !result[i].text.trim()) {
+      alert('Q' + (i + 1) + ' の質問文が空です。入力してください。');
+      return;
+    }
+    if (result[i].type !== 'free' && result[i].choices.length === 0) {
+      alert('Q' + (i + 1) + ' に選択肢が1件もありません。1つ以上入力してください。');
+      return;
+    }
+  }
+  if (!_adminData.questions) _adminData.questions = {};
+  _adminData.questions[_editBrand] = result;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'questions', brand: _editBrand, data: result });
+}
+
+function resetQuestions() {
+  if (!confirm('設問をデフォルトに戻しますか？保存されている設問は上書きされます。')) return;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'questions', brand: _editBrand, data: null },
+    function() { loadAdminConfig(); },
+    'リセットしました ✅'
+  );
+}
+
+// ============================================================
+// プロンプトタブ
+// ============================================================
+function switchPromptBrand(brand) {
+  _promptBrand = brand;
+  document.querySelectorAll('#tab-prompt .brand-tab').forEach(function(b, i) {
+    b.classList.toggle('active', (i === 0 && brand === 'kurofune') || (i === 1 && brand === 'ca'));
+  });
+  renderPromptArea();
+}
+
+function renderPromptArea() {
+  var prompts = _adminData.prompts || {};
+  document.getElementById('promptArea').value = prompts[_promptBrand] || '';
+  var eps = _adminData.episodePlaceholders || {};
+  document.getElementById('episodePlaceholderInput').value = eps[_promptBrand] || '';
+}
+
+function savePrompt() {
+  var val = document.getElementById('promptArea').value;
+  var ep  = document.getElementById('episodePlaceholderInput').value;
+  if (!_adminData.prompts) _adminData.prompts = {};
+  if (!_adminData.episodePlaceholders) _adminData.episodePlaceholders = {};
+  _adminData.prompts[_promptBrand] = val;
+  _adminData.episodePlaceholders[_promptBrand] = ep;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: val, episodePlaceholder: ep });
+}
+
+function resetPrompt() {
+  if (!confirm('プロンプトをデフォルトに戻しますか？')) return;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: null },
+    function() { loadAdminConfig(); },
+    'リセットしました ✅'
+  );
+}
+
+// ============================================================
+// デザインタブ
+// ============================================================
+function renderDesign() {
+  var design = _adminData.design || {};
+  document.getElementById('logoKurofune').value = (design.kurofune && design.kurofune.logoUrl) || '';
+  document.getElementById('logoCa').value = (design.ca && design.ca.logoUrl) || '';
+  var colorK = (design.kurofune && design.kurofune.brandColor) || '#1A56DB';
+  var colorC = (design.ca && design.ca.brandColor) || '#E3A008';
+  document.getElementById('colorKurofunePicker').value = colorK;
+  document.getElementById('colorKurofuneHex').value = colorK;
+  document.getElementById('colorCaPicker').value = colorC;
+  document.getElementById('colorCaHex').value = colorC;
+}
+
+function syncColor(brand) {
+  var picker = document.getElementById('color' + cap(brand) + 'Picker');
+  document.getElementById('color' + cap(brand) + 'Hex').value = picker.value;
+}
+function syncColorFromHex(brand) {
+  var hex = document.getElementById('color' + cap(brand) + 'Hex').value;
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    document.getElementById('color' + cap(brand) + 'Picker').value = hex;
+  }
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+function saveDesign() {
+  var data = {
+    kurofune: {
+      logoUrl: document.getElementById('logoKurofune').value.trim(),
+      brandColor: document.getElementById('colorKurofuneHex').value
+    },
+    ca: {
+      logoUrl: document.getElementById('logoCa').value.trim(),
+      brandColor: document.getElementById('colorCaHex').value
+    }
+  };
+  _adminData.design = data;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'design', data: data });
+}
+
+// ============================================================
+// キャンペーンタブ
+// ============================================================
+function renderCampaign() {
+  var cp = _adminData.campaign || {};
+  document.getElementById('campaignActive').checked = !!cp.active;
+  document.getElementById('campaignName').value = cp.name || '';
+  document.getElementById('campaignStart').value = cp.startDate || '';
+  document.getElementById('campaignEnd').value = cp.endDate || '';
+  document.getElementById('campaignReward').value = cp.reward || '';
+}
+
+function saveCampaign() {
+  var data = {
+    active: document.getElementById('campaignActive').checked,
+    name: document.getElementById('campaignName').value.trim(),
+    startDate: document.getElementById('campaignStart').value,
+    endDate: document.getElementById('campaignEnd').value,
+    reward: document.getElementById('campaignReward').value.trim()
+  };
+  _adminData.campaign = data;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'campaign', data: data });
+}
+
+// ============================================================
+// QRコードタブ
+// ============================================================
+function renderQR() {
+  var baseUrl = location.origin + location.pathname.replace('admin.html', 'kuchikomi.html');
+  var grid = document.getElementById('qrGrid');
+  grid.innerHTML = '';
+  SCHOOLS.forEach(function(s) {
+    var url = baseUrl + '?tenant=' + TENANT + '&school=' + s.school;
+    var item = document.createElement('div');
+    item.className = 'qr-item';
+    item.innerHTML =
+      '<div class="qr-name">' + escHtml(s.label) + '</div>' +
+      '<div class="qr-url">' + escHtml(url) + '</div>' +
+      '<div class="qr-canvas-wrap" id="qr_' + s.school + '"></div>' +
+      '<button class="btn-qr-gen" id="genbtn_' + s.school + '">QRコードを生成</button>' +
+      '<a class="btn-qr-dl" id="dl_' + s.school + '" download="QR_' + s.school + '.png">PNGでダウンロード</a>';
+    // onclick文字列埋め込みでの&エスケープ問題を回避 → クロージャでURLをそのまま渡す
+    (function(school, rawUrl, label) {
+      item.querySelector('#genbtn_' + school).onclick = function() { genQR(school, rawUrl, label); };
+    })(s.school, url, s.label);
+    grid.appendChild(item);
+  });
+}
+
+function genQR(school, url, label) {
+  var wrap = document.getElementById('qr_' + school);
+  wrap.innerHTML = '';
+  new QRCode(wrap, {
+    text: url,
+    width: 160,
+    height: 160,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+  // ダウンロードリンク
+  setTimeout(function() {
+    var canvas = wrap.querySelector('canvas');
+    if (canvas) {
+      var dlBtn = document.getElementById('dl_' + school);
+      dlBtn.href = canvas.toDataURL('image/png');
+      dlBtn.style.display = 'block';
+    }
+  }, 300);
+}
+
+// ============================================================
+// 共通：保存
+// ============================================================
+function postSave(payload, callback, successMsg) {
+  showOverlay('保存中...');
+  gasPost(payload)
+    .then(function(d) {
+      hideOverlay();
+      if (d.success) {
+        showStatus(successMsg || '保存しました ✅', 'success');
+        if (callback) callback();
+      } else {
+        showStatus('保存に失敗しました: ' + (d.error || '不明なエラー'), 'error');
+      }
+    })
+    .catch(function() {
+      hideOverlay();
+      showStatus('通信エラーが発生しました。', 'error');
+    });
+}
+
+// ============================================================
+// UI ユーティリティ
+// ============================================================
+function showStatus(msg, type) {
+  var bar = document.getElementById('statusBar');
+  bar.textContent = msg;
+  bar.className = 'status-bar show ' + (type || '');
+  setTimeout(function() { bar.className = 'status-bar'; }, 3000);
+}
+function showOverlay(msg) {
+  document.getElementById('overlayMsg').textContent = msg || '処理中...';
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+}
+function escHtml(s) {
+  return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

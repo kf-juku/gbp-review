@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>口コミを書く</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+:root {
+  --brand: #1A56DB;
+  --brand-light: #EBF2FF;
+  --brand-dark: #1341A8;
+}
+
+.header {
+  width: 100%;
+  max-width: 480px;
+  background: var(--brand);
+  color: white;
+  padding: 16px 20px 12px;
+  text-align: center;
+}
+.header .school-name {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+.header .header-logo img {
+  max-height: 40px;
+  max-width: 180px;
+  object-fit: contain;
+  margin-bottom: 4px;
+}
+.header .header-logo-text {
+  font-size: 20px;
+  font-weight: 800;
+}
+.header .header-subtitle {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-top: 4px;
+}
+
+.container {
+  width: 100%;
+  max-width: 480px;
+  flex: 1;
+  padding: 20px 16px 40px;
+}
+
+/* 画面切り替え */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* 初期ローディング */
+.init-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--brand-light, #EBF2FF);
+  border-top: 4px solid var(--brand);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.init-loading p { color: #666; font-size: 14px; }
+
+/* キャンペーンバナー */
+.campaign-banner {
+  background: linear-gradient(135deg, #fff3cd, #ffd97d);
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+.campaign-banner .campaign-icon { font-size: 28px; margin-bottom: 6px; }
+.campaign-banner .campaign-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #92400e;
+  margin-bottom: 6px;
+}
+.campaign-banner .campaign-reward {
+  font-size: 14px;
+  color: #78350f;
+  line-height: 1.5;
+}
+
+/* 名前入力 */
+.name-section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.name-section .name-hint {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.name-privacy-note {
+  background: #f0f4ff;
+  border-left: 3px solid var(--brand);
+  padding: 10px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 12px;
+  color: #555;
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+.input-field {
+  width: 100%;
+  padding: 14px 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 16px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.input-field:focus { border-color: var(--brand); }
+
+/* ステップインジケーター */
+.step-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  gap: 4px;
+}
+.step-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ddd;
+  transition: background 0.3s;
+}
+.step-dot.active { background: var(--brand); }
+.step-dot.done { background: var(--brand); opacity: 0.5; }
+.step-line {
+  flex: 1;
+  max-width: 32px;
+  height: 2px;
+  background: #ddd;
+  transition: background 0.3s;
+}
+.step-line.done { background: var(--brand); opacity: 0.5; }
+
+/* 設問 */
+.question-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+.step-count {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 8px;
+}
+
+/* 選択肢 */
+.choice-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.choice-item {
+  padding: 14px 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: white;
+  text-align: left;
+  width: 100%;
+}
+.choice-item:hover { border-color: var(--brand); background: var(--brand-light, #EBF2FF); }
+.choice-item.selected {
+  border-color: var(--brand);
+  background: var(--brand-light, #EBF2FF);
+  color: var(--brand-dark, #1341A8);
+  font-weight: 600;
+}
+.choice-item.selected::before { content: '✓ '; }
+
+/* 自由記述 */
+.free-text-area {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 16px;
+}
+.free-text-area:focus { border-color: var(--brand); }
+.skip-hint {
+  font-size: 12px;
+  color: #888;
+  margin-bottom: 20px;
+}
+.role-section { padding: 8px 0; }
+.role-section h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: #222; }
+.role-hint { font-size: 13px; color: #888; margin-bottom: 24px; }
+.role-list { display: flex; flex-direction: column; gap: 12px; }
+.role-btn {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 18px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+.role-btn:hover { border-color: var(--brand); background: var(--brand-light, #EBF2FF); }
+.role-icon { font-size: 28px; }
+.role-label { font-size: 16px; font-weight: 700; color: #222; display: block; }
+.role-sub { font-size: 12px; color: #888; display: block; margin-top: 2px; }
+.multi-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--brand);
+  border: 1.5px solid var(--brand);
+  border-radius: 20px;
+  padding: 4px 12px;
+  margin-bottom: 16px;
+}
+
+/* ボタン共通 */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: center;
+  margin-bottom: 10px;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary {
+  background: var(--brand);
+  color: white;
+}
+.btn-primary:not(:disabled):hover { background: var(--brand-dark, #1341A8); }
+.btn-secondary {
+  background: white;
+  color: var(--brand);
+  border: 2px solid var(--brand);
+}
+.btn-secondary:hover { background: var(--brand-light, #EBF2FF); }
+.btn-ghost {
+  background: none;
+  color: #888;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px;
+}
+.btn-ghost:hover { color: #555; }
+.btn-back {
+  background: #fff;
+  border: 1.5px solid #ddd;
+  border-radius: 20px;
+  color: #555;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 16px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+.btn-back:hover { border-color: #999; color: #222; background: #f5f5f5; }
+
+/* AIローディング */
+.ai-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 20px;
+  text-align: center;
+}
+.ai-loading .loading-icon { font-size: 48px; }
+.ai-loading h2 { font-size: 18px; font-weight: 700; color: #1a1a1a; }
+.ai-loading p { font-size: 14px; color: #666; }
+
+/* 生成結果 */
+.result-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.result-section .result-hint {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+.result-textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 14px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+  outline: none;
+  line-height: 1.7;
+  margin-bottom: 20px;
+  transition: border-color 0.2s;
+}
+.result-textarea:focus { border-color: var(--brand); }
+
+/* 完了画面 */
+.complete-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 40px;
+}
+.complete-icon { font-size: 64px; margin-bottom: 16px; }
+.complete-section h2 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+}
+.complete-section p {
+  font-size: 15px;
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+.steps-guide {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+  width: 100%;
+  margin-bottom: 24px;
+}
+.steps-guide .guide-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 12px;
+}
+.guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #444;
+  line-height: 1.5;
+}
+.guide-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--brand);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* エラー画面 */
+.error-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 60px;
+}
+.error-icon { font-size: 48px; margin-bottom: 16px; }
+.error-section h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 8px;
+}
+.error-section p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+/* コピー成功トースト */
+.toast {
+  position: fixed;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: #1a1a1a;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="header" id="header">
+  <div class="school-name" id="schoolName">読み込み中...</div>
+  <div class="header-logo" id="headerLogo">
+    <div class="header-logo-text" id="logoText"></div>
+  </div>
+  <div class="header-subtitle">Googleの口コミを書いてみましょう</div>
+</div>
+
+<div class="container">
+
+  <!-- 画面0: 初期ローディング -->
+  <div class="screen active" id="screen-init">
+    <div class="init-loading">
+      <div class="spinner"></div>
+      <p>準備しています...</p>
+    </div>
+  </div>
+
+  <!-- 画面R: 属性選択 -->
+  <div class="screen" id="screen-role">
+    <div class="role-section">
+      <h2>あなたはどちらですか？</h2>
+      <div class="role-hint">口コミ文の一人称を自然にするために使います。</div>
+      <div class="role-list">
+        <button class="role-btn" onclick="selectRole('parent')">
+          <span class="role-icon">👨‍👩‍👧</span>
+          <span class="role-label">保護者として</span>
+          <span class="role-sub">お子さんが通っている・通っていた</span>
+        </button>
+        <button class="role-btn" onclick="selectRole('student')">
+          <span class="role-icon">🎒</span>
+          <span class="role-label">生徒として</span>
+          <span class="role-sub">自分が通っている・通っていた</span>
+        </button>
+        <button class="role-btn" onclick="selectRole('other')">
+          <span class="role-icon">💬</span>
+          <span class="role-label">その他</span>
+          <span class="role-sub">上記以外の立場から</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 画面1: 名前入力（キャンペーン時のみ） -->
+  <div class="screen" id="screen-name">
+    <div class="campaign-banner" id="campaignBanner">
+      <div class="campaign-icon">🎁</div>
+      <div class="campaign-title" id="campaignTitle">キャンペーン開催中！</div>
+      <div class="campaign-reward" id="campaignReward"></div>
+    </div>
+    <div class="name-section">
+      <h2>お名前を教えてください</h2>
+      <div class="name-hint">口コミを書いていただいた方に特典をお渡しします。</div>
+      <div class="name-privacy-note">
+        ⚠️ 入力したお名前はGoogleの口コミには表示されません。スタッフの確認のみに使用します。
+      </div>
+      <input type="text" class="input-field" id="nameInput" placeholder="例：山田 太郎" maxlength="30">
+      <br><br>
+      <button class="btn btn-primary" id="nameNextBtn" onclick="goToSurvey()" disabled>はじめる →</button>
+      <br>
+      <button class="btn-back" onclick="showScreen('screen-role')" style="margin-top:8px">← 前に戻る</button>
+    </div>
+  </div>
+
+  <!-- 画面2: アンケート -->
+  <div class="screen" id="screen-survey">
+    <button class="btn-back" id="backBtn" onclick="goBack()">← 前に戻る</button>
+    <div class="step-indicator" id="stepIndicator"></div>
+    <div class="step-count" id="stepCount"></div>
+    <div class="question-label" id="questionLabel"></div>
+    <div id="choicesArea"></div>
+    <button class="btn btn-primary" id="nextBtn" onclick="goNext()" style="display:none">次へ →</button>
+    <button class="btn btn-primary" id="generateBtn" onclick="startGenerate()" style="display:none">口コミ文を作る ✨</button>
+    <button class="btn btn-ghost" id="skipBtn" onclick="startGenerate()" style="display:none">スキップして作る</button>
+  </div>
+
+  <!-- 画面3: AI生成中 -->
+  <div class="screen" id="screen-loading">
+    <div class="ai-loading">
+      <div class="loading-icon">✨</div>
+      <div class="spinner"></div>
+      <h2>口コミ文を作っています</h2>
+      <p>AIがあなたの回答をもとに<br>自然な文章を生成しています</p>
+    </div>
+  </div>
+
+  <!-- 画面4: 生成結果 -->
+  <div class="screen" id="screen-result">
+    <div class="result-section">
+      <h2>✅ 口コミ文ができました</h2>
+      <div class="result-hint">内容を確認して、修正があれば直接編集できます。</div>
+      <textarea class="result-textarea" id="resultText"></textarea>
+      <button class="btn btn-primary" id="copyBtn" onclick="copyAndOpen()">完成！Googleに投稿する →</button>
+      <button class="btn btn-secondary" onclick="regenerate()">もう一度生成する</button>
+    </div>
+  </div>
+
+  <!-- 画面5: 完了 -->
+  <div class="screen" id="screen-complete">
+    <div class="complete-section">
+      <div class="complete-icon">🙏</div>
+      <h2>ありがとうございました！</h2>
+      <p>口コミのご協力に感謝します。<br>Googleのページに文章が貼り付けられたら、<br>星の数を選んで投稿してください。</p>
+      <button class="btn btn-secondary" onclick="restart()" style="margin-top:24px">最初からやり直す</button>
+    </div>
+  </div>
+
+  <!-- エラー画面 -->
+  <div class="screen" id="screen-error">
+    <div class="error-section">
+      <div class="error-icon">⚠️</div>
+      <h2 id="errorTitle">エラーが発生しました</h2>
+      <p id="errorMsg">もう一度お試しください。</p>
+      <button class="btn btn-primary" id="errorRetryBtn" onclick="retryAction()">もう一度試す</button>
+      <button class="btn btn-ghost" onclick="restart()">最初からやり直す</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast">📋 コピーしました！★をつけて文章を貼り付けてください</div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8axUPMp0B0bfwkdyUODxpd0J15v8d5eNm2cyL9oWz-UvnanBAC83-3Tf4ZKkPz1hQ/exec';
+
+// ============================================================
+// GAS POST ヘルパー（FormData形式でプリフライトを回避）
+// ============================================================
+function gasPost(payload) {
+  var fd = new FormData();
+  fd.append('body', JSON.stringify(payload));
+  return fetch(GAS_URL, { method: 'POST', body: fd })
+    .then(function(r) { return r.json(); });
+}
+
+
+var _tenant = '', _school = '', _config = null;
+var _questions = [], _currentStep = 0, _answers = [];
+var _respondentName = '', _campaignActive = false, _respondentRole = '';
+var _generatedText = '';
+var _retryFn = null;
+var _isGenerating = false;  // 生成中フラグ（連打防止）
+var _generateCount = 0;     // 生成回数（上限5回）
+var GENERATE_LIMIT = 5;
+
+// ============================================================
+// 初期化
+// ============================================================
+function init() {
+  var params = new URLSearchParams(location.search);
+  _tenant = params.get('tenant') || '';
+  _school = params.get('school') || '';
+
+  if (!_tenant || !_school) {
+    showError(
+      'QRコードを読み直してください',
+      '正しいQRコードからアクセスしてください。URLに必要な情報が含まれていません。',
+      null
+    );
+    return;
+  }
+
+  fetchConfig();
+}
+
+function fetchConfig() {
+  showScreen('screen-init');
+  var url = GAS_URL + '?action=getConfig&tenant=' + encodeURIComponent(_tenant) + '&school=' + encodeURIComponent(_school);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        showError('設定の読み込みに失敗しました', data.error, fetchConfig);
+        return;
+      }
+      _config = data;
+      applyConfig(data);
+      startFlow();
+    })
+    .catch(function() {
+      showError(
+        '通信エラーが発生しました',
+        'ネットワーク接続を確認してもう一度お試しください。',
+        fetchConfig
+      );
+    });
+}
+
+function applyConfig(cfg) {
+  // ブランドカラー
+  var color = cfg.brandColor || '#1A56DB';
+  document.documentElement.style.setProperty('--brand', color);
+  // 明暗は簡易計算（暗め）
+  document.documentElement.style.setProperty('--brand-dark', shadeColor(color, -20));
+  document.documentElement.style.setProperty('--brand-light', shadeColor(color, 80) + '33');
+
+  // 学校名
+  document.getElementById('schoolName').textContent = cfg.schoolName || '';
+
+  // ロゴ
+  var logoDiv = document.getElementById('headerLogo');
+  if (cfg.logoUrl) {
+    logoDiv.innerHTML = '<img src="' + cfg.logoUrl + '" alt="' + (cfg.schoolName || '') + '">';
+  } else {
+    logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + (cfg.schoolName || '') + '</div>';
+  }
+
+  // 設問
+  _questions = cfg.questions || [];
+
+  // ページタイトル
+  document.title = (cfg.schoolName || '') + ' - 口コミを書く';
+}
+
+function startFlow() {
+  // キャンペーン確認
+  _campaignActive = false;
+  var cp = _config.campaign;
+  if (cp && cp.active) {
+    var now = new Date();
+    var start = cp.startDate ? new Date(cp.startDate) : null;
+    var end = cp.endDate ? new Date(cp.endDate + 'T23:59:59') : null;
+    if ((!start || now >= start) && (!end || now <= end)) {
+      _campaignActive = true;
+    }
+  }
+
+  // 常にまず属性選択画面へ
+  showScreen('screen-role');
+}
+
+// ============================================================
+// 名前入力
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+  var nameInput = document.getElementById('nameInput');
+  if (nameInput) {
+    nameInput.addEventListener('input', function() {
+      document.getElementById('nameNextBtn').disabled = (nameInput.value.trim() === '');
+    });
+  }
+  init();
+});
+
+function selectRole(role) {
+  _respondentRole = role;
+  _saveProgress();
+  // 属性選択後：キャンペーン中なら名前入力へ、そうでなければアンケートへ
+  var cp = _config ? _config.campaign : null;
+  if (_campaignActive && cp) {
+    document.getElementById('campaignTitle').textContent = cp.name || 'キャンペーン開催中！';
+    document.getElementById('campaignReward').textContent = cp.reward || '';
+    showScreen('screen-name');
+  } else {
+    initSurvey();
+    if (_questions.length > 0) {
+      showScreen('screen-survey');
+    }
+    // 設問0件のときはinitSurvey内のrenderStep→startGenerateで画面遷移する
+  }
+}
+
+function goToSurvey() {
+  _respondentName = document.getElementById('nameInput').value.trim();
+  _saveProgress();
+  if (!_respondentName) return;
+  initSurvey();
+  showScreen('screen-survey');
+}
+
+// ============================================================
+// アンケート
+// ============================================================
+function initSurvey(resume) {
+  if (!resume) {
+    _currentStep = 0;
+    _answers = new Array(_questions.length).fill(null);
+  }
+  renderStep();
+}
+
+function renderStep() {
+  if (!_questions.length) {
+    startGenerate();
+    return;
+  }
+  var q = _questions[_currentStep];
+  var total = _questions.length;
+
+  // ステップインジケーター
+  var ind = document.getElementById('stepIndicator');
+  ind.innerHTML = '';
+  for (var i = 0; i < total; i++) {
+    if (i > 0) {
+      var line = document.createElement('div');
+      line.className = 'step-line' + (i <= _currentStep ? ' done' : '');
+      ind.appendChild(line);
+    }
+    var dot = document.createElement('div');
+    dot.className = 'step-dot' + (i < _currentStep ? ' done' : (i === _currentStep ? ' active' : ''));
+    ind.appendChild(dot);
+  }
+
+  document.getElementById('stepCount').textContent = (_currentStep + 1) + ' / ' + total;
+  document.getElementById('questionLabel').textContent = q.text;
+
+  // 戻るボタン
+  document.getElementById('backBtn').style.display = _currentStep > 0 ? 'flex' : 'none';
+
+  // 選択肢エリア
+  var area = document.getElementById('choicesArea');
+  area.innerHTML = '';
+
+  var nextBtn = document.getElementById('nextBtn');
+  var generateBtn = document.getElementById('generateBtn');
+  var skipBtn = document.getElementById('skipBtn');
+  nextBtn.style.display = 'none';
+  generateBtn.style.display = 'none';
+  skipBtn.style.display = 'none';
+
+  var isLast = (_currentStep === total - 1);
+
+  if (q.type === 'free') {
+    // 自由記述
+    var ta = document.createElement('textarea');
+    ta.className = 'free-text-area';
+    ta.placeholder = (_config && _config.episodePlaceholder)
+      ? _config.episodePlaceholder
+      : '例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。';
+    ta.value = _answers[_currentStep] || '';
+    ta.addEventListener('input', function() {
+      _answers[_currentStep] = ta.value;
+    });
+    area.appendChild(ta);
+    var hint = document.createElement('div');
+    hint.className = 'skip-hint';
+    hint.textContent = '※ 書かなくても口コミ文は作れます';
+    area.appendChild(hint);
+    generateBtn.style.display = 'block';
+    // skipBtn は統合済み（generateBtnに「書かなくてもOK」を内包）
+  } else if (q.type === 'single') {
+    var list = document.createElement('div');
+    list.className = 'choice-list';
+    q.choices.forEach(function(choice, ci) {
+      var btn = document.createElement('button');
+      btn.className = 'choice-item' + (_answers[_currentStep] === choice ? ' selected' : '');
+      btn.textContent = choice;
+      btn.onclick = function() {
+        _answers[_currentStep] = choice;
+        if (isLast) {
+          startGenerate();
+        } else {
+          goNext();
+        }
+      };
+      list.appendChild(btn);
+    });
+    area.appendChild(list);
+  } else if (q.type === 'multi') {
+    var selected = (_answers[_currentStep] || []).slice();  // 参照ではなくコピーを取る
+    // 複数選択バッジ
+    var multiBadge = document.createElement('div');
+    multiBadge.className = 'multi-badge';
+    multiBadge.textContent = '☑ 複数選べます（当てはまるものをすべてタップ）';
+    area.appendChild(multiBadge);
+    var list2 = document.createElement('div');
+    list2.className = 'choice-list';
+    q.choices.forEach(function(choice) {
+      var btn = document.createElement('button');
+      btn.className = 'choice-item' + (selected.indexOf(choice) >= 0 ? ' selected' : '');
+      btn.textContent = choice;
+      btn.onclick = function() {
+        var idx = selected.indexOf(choice);
+        if (idx >= 0) {
+          selected.splice(idx, 1);
+          btn.classList.remove('selected');
+        } else {
+          selected.push(choice);
+          btn.classList.add('selected');
+        }
+        _answers[_currentStep] = selected.slice();
+        _saveProgress();
+        if (isLast) {
+          generateBtn.disabled = (selected.length === 0);
+        } else {
+          nextBtn.disabled = (selected.length === 0);
+        }
+      };
+      list2.appendChild(btn);
+    });
+    area.appendChild(list2);
+    if (isLast) {
+      generateBtn.style.display = 'block';
+      generateBtn.disabled = (selected.length === 0);
+    } else {
+      nextBtn.style.display = 'block';
+      nextBtn.disabled = (!selected || selected.length === 0);
+    }
+  }
+}
+
+function goNext() {
+  if (_currentStep < _questions.length - 1) {
+    _currentStep++;
+    renderStep();
+  }
+}
+
+function goBack() {
+  if (_currentStep > 0) {
+    _currentStep--;
+    renderStep();
+  } else {
+    // Q1から戻る → キャンペーンONなら名前入力へ、OFFなら属性選択へ
+    if (_campaignActive) {
+      showScreen('screen-name');
+    } else {
+      showScreen('screen-role');
+    }
+  }
+}
+
+// ============================================================
+// AI生成
+// ============================================================
+function startGenerate() {
+  if (_isGenerating) return;  // 連打防止
+  if (_generateCount >= GENERATE_LIMIT) {
+    showError(
+      '生成回数の上限に達しました',
+      '1回の利用につき' + GENERATE_LIMIT + '回まで生成できます。お手数ですが、最初からやり直すか、時間をおいてから再度お試しください。',
+      null
+    );
+    return;
+  }
+  _isGenerating = true;
+  _generateCount++;
+
+  // 自由記述の場合は現在のテキスト取得
+  var freeArea = document.querySelector('.free-text-area');
+  if (freeArea) {
+    _answers[_currentStep] = freeArea.value;
+  }
+
+  showScreen('screen-loading');
+
+  var q = _questions;
+  var payload = {
+    action: 'generateReview',
+    tenant: _tenant,
+    school: _school,
+    respondentRole: _respondentRole,
+    answers: _answers.map(function(a, i) {
+      return {
+        question: q[i] ? q[i].text : '',
+        answer: Array.isArray(a) ? a.join('、') : (a || '')
+      };
+    })
+  };
+
+  gasPost(payload)
+    .then(function(data) {
+      if (data.error) {
+        _isGenerating = false;
+        showError('口コミ文の生成に失敗しました', data.error, startGenerate);
+        return;
+      }
+      _isGenerating = false;
+      _generatedText = data.text || '';
+      document.getElementById('resultText').value = _generatedText;
+      showScreen('screen-result');
+    })
+    .catch(function() {
+      _isGenerating = false;
+      showError('通信エラーが発生しました', 'ネットワーク接続を確認してもう一度お試しください。', startGenerate);
+    });
+}
+
+function regenerate() {
+  if (_isGenerating) return;  // 連打防止
+  startGenerate();
+}
+
+// ============================================================
+// コピー＆完了
+// ============================================================
+function copyAndOpen() {
+  var text = document.getElementById('resultText').value;
+  _generatedText = text;
+
+  // クリップボードにコピー
+  // GBP URLを開く
+  var gbpUrl = (_config && _config.gbpUrl) ? _config.gbpUrl : null;
+  if (gbpUrl) {
+    setTimeout(function() { window.open(gbpUrl, '_blank'); }, 300);
+  }
+
+  // ログ保存（fire-and-forget）
+  saveLog(true);
+
+  // クリップボードコピー → 成功・失敗どちらでも完了画面へ
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() {
+      showToast();
+      showScreen('screen-complete');
+    }).catch(function() {
+      fallbackCopy(text);
+      showScreen('screen-complete');
+    });
+  } else {
+    fallbackCopy(text);
+    _clearProgress();
+    showScreen('screen-complete');
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  showToast();
+}
+
+function showToast() {
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+// ============================================================
+// ログ保存
+// ============================================================
+function saveLog(copied) {
+  var payload = {
+    action: 'saveLog',
+    tenant: _tenant,
+    school: _school,
+    respondentName: _respondentName,
+    answers: _answers.map(function(a) {
+      return Array.isArray(a) ? a.join('、') : (a || '');
+    }),
+    generatedText: _generatedText,
+    copied: copied ? true : false,
+    campaignActive: _campaignActive,
+    respondentRole: _respondentRole
+  };
+  gasPost(payload).catch(function(e) {
+    console.warn('ログ保存失敗:', e);
+  });
+}
+
+// ============================================================
+// エラー・リスタート
+// ============================================================
+function showError(title, msg, retryFn) {
+  document.getElementById('errorTitle').textContent = title;
+  document.getElementById('errorMsg').textContent = msg;
+  _retryFn = retryFn;
+  var retryBtn = document.getElementById('errorRetryBtn');
+  retryBtn.style.display = retryFn ? 'block' : 'none';
+  showScreen('screen-error');
+}
+
+function retryAction() {
+  if (_retryFn) _retryFn();
+}
+
+function restart() {
+  _clearProgress();
+  _answers = [];
+  _currentStep = 0;
+  _respondentName = '';
+  _respondentRole = '';
+  _generatedText = '';
+  _campaignActive = false;
+  _config = null;
+  _isGenerating = false;
+  var nameInput = document.getElementById('nameInput');
+  if (nameInput) nameInput.value = '';
+  document.getElementById('nameNextBtn').disabled = true;
+  fetchConfig();
+}
+
+// ============================================================
+// 途中再開（localStorage）
+// ============================================================
+function _lsKey() {
+  return 'kuchikomi_' + _tenant + '_' + _school;
+}
+
+function _saveProgress() {
+  // 非同期で保存（UIをブロックしない）
+  setTimeout(function() {
+    try {
+      var data = {
+        respondentRole: _respondentRole,
+        respondentName: _respondentName,
+        currentStep: _currentStep,
+        answers: _answers,
+        savedAt: Date.now()
+      };
+      localStorage.setItem(_lsKey(), JSON.stringify(data));
+    } catch(e) { /* localStorage 使用不可の場合は無視 */ }
+  }, 0);
+}
+
+function _clearProgress() {
+  try { localStorage.removeItem(_lsKey()); } catch(e) {}
+}
+
+function _checkResume() {
+  try {
+    var raw = localStorage.getItem(_lsKey());
+    if (!raw) return false;
+    var data = JSON.parse(raw);
+    // 24時間以上前のデータは無視
+    if (!data.savedAt || (Date.now() - data.savedAt) > 86400000) {
+      _clearProgress();
+      return false;
+    }
+    // roleが未設定なら再開不可
+    if (!data.respondentRole) return false;
+    return data;
+  } catch(e) { return false; }
+}
+
+function tryResume() {
+  var data = _checkResume();
+  if (!data) { startFlow(); return; }
+  if (!confirm('前回の途中から再開しますか？\n（「キャンセル」で最初から始めます）')) {
+    _clearProgress();
+    startFlow();
+    return;
+  }
+  // 復元
+  _respondentRole  = data.respondentRole  || '';
+  _respondentName  = data.respondentName  || '';
+  _currentStep     = data.currentStep     || 0;
+  _answers         = data.answers         || [];
+  // 名前入力欄を復元
+  var nameInput = document.getElementById('nameInput');
+  if (nameInput && _respondentName) {
+    nameInput.value = _respondentName;
+    document.getElementById('nameNextBtn').disabled = false;
+  }
+  // 設問を復元してsurvey画面へ
+  initSurvey(true);
+  showScreen('screen-survey');
+}
+
+// ============================================================
+// 画面切り替え
+// ============================================================
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(function(s) {
+    s.classList.remove('active');
+  });
+  var target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// ユーティリティ
+// ============================================================
+function shadeColor(hex, percent) {
+  var num = parseInt(hex.replace('#', ''), 16);
+  var r = Math.min(255, Math.max(0, (num >> 16) + percent));
+  var g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + percent));
+  var b = Math.min(255, Math.max(0, (num & 0xff) + percent));
+  return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+}
+</script>
+</body>
+</html>
