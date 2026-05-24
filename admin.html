@@ -6,238 +6,359 @@
 <title>管理画面 - 口コミ支援ツール</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
-  background: #f0f2f5;
-  min-height: 100vh;
+
+:root {
+  --blue: #1A56DB; --blue-dark: #1341A8; --blue-light: #EBF2FF; --blue-mid: #93c5fd;
+  --surface: #f4f6f9; --surface2: #edf0f5; --border: #dde3ec;
+  --text: #1a2535; --text-muted: #5a6a7e; --text-light: #94a3b8;
+  --green: #10b981; --green-light: #d1fae5;
+  --amber: #f59e0b; --amber-light: #fef3c7;
+  --red: #dc2626; --red-light: #fee2e2;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  --radius: 10px;
 }
-/* ログイン画面 */
+
+body {
+  font-family: 'Hiragino Sans', 'Noto Sans JP', 'Yu Gothic', -apple-system, sans-serif;
+  background: var(--surface);
+  min-height: 100vh;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ========== ログイン画面 ========== */
 .login-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
   padding: 20px;
+  background: linear-gradient(135deg, #1A56DB 0%, #1d4ed8 100%);
 }
 .login-box {
   background: white;
   border-radius: 16px;
-  padding: 40px 32px;
+  padding: 44px 36px;
   width: 100%;
   max-width: 400px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.login-logo-icon {
+  width: 56px; height: 56px;
+  background: var(--blue-light);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin-bottom: 12px;
 }
 .login-box h1 {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 800;
-  color: #1a1a1a;
-  margin-bottom: 6px;
+  color: var(--text);
+  margin-bottom: 4px;
 }
 .login-box .login-sub {
   font-size: 13px;
-  color: #888;
-  margin-bottom: 28px;
+  color: var(--text-light);
 }
-.form-group { margin-bottom: 16px; }
+.form-group { margin-bottom: 18px; }
 .form-group label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #444;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
   margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .form-input {
   width: 100%;
-  padding: 12px 14px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 15px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 14px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
   outline: none;
-  transition: border-color 0.2s;
+  transition: all 0.15s;
+  box-sizing: border-box;
 }
-.form-input:focus { border-color: #1A56DB; }
+.form-input:focus { border-color: var(--blue); background: white; box-shadow: 0 0 0 3px rgba(26,86,219,0.12); }
 .btn-login {
   width: 100%;
-  padding: 14px;
-  background: #1A56DB;
+  padding: 13px;
+  background: var(--blue);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 15px;
+  border-radius: var(--radius);
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  margin-top: 8px;
+  margin-top: 6px;
+  font-family: inherit;
+  transition: background 0.15s;
 }
-.btn-login:hover { background: #1341A8; }
+.btn-login:hover { background: var(--blue-dark); }
 .login-error {
-  color: #dc2626;
+  color: var(--red);
   font-size: 13px;
-  margin-top: 10px;
+  margin-top: 12px;
   display: none;
+  text-align: center;
 }
 
-/* メイン画面 */
+/* ========== レイアウト（サイドバー） ========== */
 #mainApp { display: none; }
-.topbar {
-  background: #1A56DB;
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* サイドバー */
+.sidebar {
+  width: 220px;
+  flex-shrink: 0;
+  background: #1e293b;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 50;
+  overflow-y: auto;
+}
+.sidebar-header {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-title {
+  font-size: 13px;
+  font-weight: 800;
   color: white;
-  padding: 14px 24px;
+  line-height: 1.3;
+}
+.sidebar-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 3px;
+}
+.sidebar-nav {
+  flex: 1;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-}
-.topbar h1 { font-size: 18px; font-weight: 700; }
-.btn-logout {
-  background: rgba(255,255,255,0.2);
-  border: none;
-  color: white;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  cursor: pointer;
-}
-.btn-logout:hover { background: rgba(255,255,255,0.3); }
-
-/* タブ */
-.tab-bar {
-  background: white;
-  display: flex;
-  overflow-x: auto;
-  border-bottom: 2px solid #e5e7eb;
-  padding: 0 16px;
-  gap: 4px;
-  scrollbar-width: none;
-}
-.tab-bar::-webkit-scrollbar { display: none; }
-.tab-btn {
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
   border: none;
   background: none;
+  color: rgba(255,255,255,0.6);
   font-size: 13px;
-  font-weight: 600;
-  color: #888;
+  font-weight: 500;
   cursor: pointer;
-  white-space: nowrap;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -2px;
-  transition: all 0.15s;
+  text-align: left;
+  width: 100%;
+  font-family: inherit;
+  transition: all 0.12s;
 }
-.tab-btn:hover { color: #1A56DB; }
-.tab-btn.active {
-  color: #1A56DB;
-  border-bottom-color: #1A56DB;
+.nav-item:hover { background: rgba(255,255,255,0.08); color: white; }
+.nav-item.active { background: var(--blue); color: white; font-weight: 700; }
+.nav-icon { font-size: 15px; flex-shrink: 0; }
+.sidebar-footer {
+  padding: 14px 10px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+}
+.btn-logout:hover { border-color: rgba(255,255,255,0.35); color: white; }
+
+/* メインコンテンツ */
+.main-content {
+  margin-left: 220px;
+  flex: 1;
+  min-width: 0;
+}
+.page-header {
+  background: white;
+  border-bottom: 1px solid var(--border);
+  padding: 18px 28px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+.page-header-icon { font-size: 22px; }
+.page-header h2 {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text);
+}
+.page-body {
+  padding: 24px 28px;
+  max-width: 820px;
 }
 
-.tab-content { display: none; padding: 24px 20px; max-width: 800px; margin: 0 auto; }
+.tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* カード */
+/* ========== カード ========== */
 .card {
   background: white;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border);
 }
 .card h2 {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text);
   margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .card .card-sub {
   font-size: 13px;
-  color: #888;
-  margin-bottom: 16px;
+  color: var(--text-muted);
+  margin-bottom: 18px;
+  line-height: 1.5;
 }
-
-.field-row {
-  margin-bottom: 14px;
-}
-.field-row label {
+.field-row { margin-bottom: 16px; }
+.field-row label, .field-label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #444;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
   margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
-.field-row .form-input { font-size: 14px; }
+.field-hint {
+  font-size: 12px;
+  color: var(--text-light);
+  margin-top: 5px;
+  line-height: 1.5;
+}
 
-/* ボタン */
+/* ========== ボタン ========== */
 .btn-save {
-  padding: 11px 24px;
-  background: #1A56DB;
+  padding: 10px 22px;
+  background: var(--blue);
   color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
   margin-right: 8px;
+  font-family: inherit;
+  transition: background 0.12s;
 }
-.btn-save:hover { background: #1341A8; }
+.btn-save:hover { background: var(--blue-dark); }
 .btn-default {
   padding: 10px 20px;
   background: white;
-  color: #666;
-  border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: 14px;
+  color: var(--text-muted);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
 }
-.btn-default:hover { border-color: #999; color: #333; }
+.btn-default:hover { border-color: #94a3b8; color: var(--text); background: var(--surface); }
 .btn-add {
   padding: 8px 16px;
-  background: #e8f0ff;
-  color: #1A56DB;
+  background: var(--blue-light);
+  color: var(--blue);
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   margin-top: 8px;
+  font-family: inherit;
+  transition: background 0.12s;
 }
 .btn-add:hover { background: #d0e2ff; }
 .btn-remove {
   padding: 4px 10px;
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--red-light);
+  color: var(--red);
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
   flex-shrink: 0;
+  font-family: inherit;
 }
 .btn-remove:hover { background: #fecaca; }
 
-/* 設問エディタ */
+/* ========== 設問エディタ ========== */
 .brand-tabs {
   display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
+  margin-bottom: 18px;
+  background: var(--surface);
+  padding: 4px;
+  border-radius: 10px;
+  width: fit-content;
 }
 .brand-tab {
-  padding: 7px 16px;
-  border-radius: 6px;
+  padding: 7px 18px;
+  border-radius: 8px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  border: 2px solid #ddd;
-  background: white;
-  color: #666;
+  border: none;
+  background: none;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: all 0.12s;
 }
 .brand-tab.active {
-  border-color: #1A56DB;
-  background: #EBF2FF;
-  color: #1A56DB;
+  background: white;
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
 }
 .q-block {
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 12px;
-  background: #fafafa;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--surface);
 }
 .q-block-header {
   display: flex;
@@ -245,72 +366,79 @@ body {
   justify-content: space-between;
   margin-bottom: 10px;
 }
-.q-block-title { font-size: 13px; font-weight: 700; color: #444; }
+.q-block-title { font-size: 12px; font-weight: 700; color: var(--text-muted); }
 .q-type-badge {
   font-size: 11px;
   padding: 2px 8px;
   border-radius: 4px;
-  background: #f0f0f0;
-  color: #666;
+  background: var(--surface2);
+  color: var(--text-muted);
 }
 .q-type-select {
-  font-size: 13px;
+  font-size: 12px;
   padding: 4px 8px;
-  border: 1.5px solid #ddd;
+  border: 1.5px solid var(--border);
   border-radius: 6px;
-  background: #fff;
+  background: white;
   cursor: pointer;
   outline: none;
+  font-family: inherit;
 }
-.q-type-select:focus { border-color: #1A56DB; }
+.q-type-select:focus { border-color: var(--blue); }
 .q-header-controls {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .btn-move {
-  background: #f3f4f6;
-  border: 1.5px solid #ddd;
+  background: white;
+  border: 1.5px solid var(--border);
   border-radius: 5px;
   padding: 2px 8px;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  color: #555;
+  color: var(--text-muted);
+  font-family: inherit;
 }
-.btn-move:hover { background: #e5e7eb; }
+.btn-move:hover { background: var(--surface2); color: var(--text); }
 .btn-delete-q {
-  background: #fff0f0;
+  background: var(--red-light);
   border: 1.5px solid #fca5a5;
   border-radius: 5px;
   padding: 2px 8px;
   font-size: 12px;
   cursor: pointer;
-  color: #dc2626;
+  color: var(--red);
+  font-family: inherit;
 }
-.btn-delete-q:hover { background: #fee2e2; }
+.btn-delete-q:hover { background: #fecaca; }
 .btn-add-question {
   width: 100%;
   padding: 10px;
   margin-top: 4px;
-  border: 2px dashed #93c5fd;
+  border: 2px dashed var(--blue-mid);
   border-radius: 8px;
-  background: #eff6ff;
-  color: #1A56DB;
-  font-size: 14px;
+  background: var(--blue-light);
+  color: var(--blue);
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s;
 }
 .btn-add-question:hover { background: #dbeafe; }
 .q-text-input {
   width: 100%;
   padding: 9px 12px;
-  border: 1.5px solid #ddd;
+  border: 1.5px solid var(--border);
   border-radius: 7px;
-  font-size: 14px;
+  font-size: 13px;
+  font-family: inherit;
   margin-bottom: 10px;
   outline: none;
+  background: white;
 }
-.q-text-input:focus { border-color: #1A56DB; }
+.q-text-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 .choice-row {
   display: flex;
   gap: 8px;
@@ -320,63 +448,81 @@ body {
 .choice-input {
   flex: 1;
   padding: 7px 10px;
-  border: 1.5px solid #ddd;
+  border: 1.5px solid var(--border);
   border-radius: 6px;
   font-size: 13px;
   outline: none;
+  font-family: inherit;
+  background: white;
 }
-.choice-input:focus { border-color: #1A56DB; }
+.choice-input:focus { border-color: var(--blue); }
 
-/* プロンプト */
+/* ========== プロンプト ========== */
 .prompt-area {
   width: 100%;
   min-height: 220px;
   padding: 12px 14px;
-  border: 2px solid #ddd;
-  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
   font-size: 13px;
   font-family: inherit;
   resize: vertical;
   outline: none;
   line-height: 1.7;
+  background: white;
+  box-sizing: border-box;
 }
-.prompt-area:focus { border-color: #1A56DB; }
+.prompt-area:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(26,86,219,0.1); }
 
-/* デザイン */
+/* ========== デザイン設定 ========== */
+.brand-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
 .color-row {
   display: flex;
   align-items: center;
   gap: 10px;
 }
-.color-picker { width: 44px; height: 38px; border: 2px solid #ddd; border-radius: 6px; cursor: pointer; padding: 0; }
+.color-picker { width: 44px; height: 38px; border: 1.5px solid var(--border); border-radius: 8px; cursor: pointer; padding: 2px; }
 .color-hex {
   width: 110px;
   padding: 8px 10px;
-  border: 1.5px solid #ddd;
-  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
   font-size: 13px;
   font-family: monospace;
   outline: none;
+  background: white;
 }
-.color-hex:focus { border-color: #1A56DB; }
+.color-hex:focus { border-color: var(--blue); }
 
-/* キャンペーン */
+/* ========== キャンペーン ========== */
 .toggle-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
 }
 .toggle {
   position: relative;
-  width: 50px;
-  height: 28px;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
 }
 .toggle input { opacity: 0; width: 0; height: 0; }
 .toggle-slider {
   position: absolute;
   inset: 0;
-  background: #ccc;
+  background: #cbd5e1;
   border-radius: 28px;
   cursor: pointer;
   transition: background 0.2s;
@@ -384,148 +530,158 @@ body {
 .toggle-slider::before {
   content: '';
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: white;
   top: 4px;
   left: 4px;
   transition: transform 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
 }
-.toggle input:checked + .toggle-slider { background: #1A56DB; }
+.toggle input:checked + .toggle-slider { background: var(--blue); }
 .toggle input:checked + .toggle-slider::before { transform: translateX(22px); }
-.toggle-label { font-size: 14px; font-weight: 600; color: #333; }
+.toggle-label { font-size: 14px; font-weight: 600; color: var(--text); }
 
-/* QRコード */
+/* ========== QRコード ========== */
 .qr-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 .qr-item {
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 16px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
   text-align: center;
   background: white;
+  transition: box-shadow 0.15s;
 }
+.qr-item:hover { box-shadow: var(--shadow); }
 .qr-item .qr-name {
   font-size: 13px;
   font-weight: 700;
-  color: #333;
+  color: var(--text);
   margin-bottom: 4px;
 }
 .qr-item .qr-url {
   font-size: 11px;
-  color: #888;
+  color: var(--text-light);
   word-break: break-all;
   margin-bottom: 10px;
 }
 .qr-canvas-wrap { margin: 10px auto; }
 .btn-qr-gen {
-  padding: 8px 16px;
-  background: #1A56DB;
+  padding: 8px 14px;
+  background: var(--blue);
   color: white;
   border: none;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: block;
   width: 100%;
   margin-bottom: 8px;
+  font-family: inherit;
+  transition: background 0.12s;
 }
-.btn-qr-gen:hover { background: #1341A8; }
+.btn-qr-gen:hover { background: var(--blue-dark); }
 .btn-qr-dl {
   padding: 7px 14px;
   background: white;
-  color: #1A56DB;
-  border: 2px solid #1A56DB;
-  border-radius: 6px;
+  color: var(--blue);
+  border: 1.5px solid var(--blue);
+  border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: none;
   width: 100%;
+  font-family: inherit;
 }
-.btn-qr-dl:hover { background: #EBF2FF; }
+.btn-qr-dl:hover { background: var(--blue-light); }
 
-/* ステータスバー */
+/* ========== ステータスバー ========== */
 .status-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #1a1a1a;
+  background: #1e293b;
   color: white;
   padding: 10px 20px;
   font-size: 13px;
   transform: translateY(100%);
   transition: transform 0.3s;
-  z-index: 100;
+  z-index: 200;
   text-align: center;
 }
 .status-bar.show { transform: translateY(0); }
-.status-bar.success { background: #15803d; }
-.status-bar.error { background: #dc2626; }
+.status-bar.success { background: var(--green); }
+.status-bar.error { background: var(--red); }
 
-/* ローディングオーバーレイ */
+/* ========== ローディングオーバーレイ ========== */
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.3);
-  z-index: 200;
+  background: rgba(0,0,0,0.35);
+  z-index: 300;
   align-items: center;
   justify-content: center;
 }
 .overlay.show { display: flex; }
 .overlay-box {
   background: white;
-  border-radius: 12px;
-  padding: 28px 32px;
+  border-radius: 14px;
+  padding: 28px 36px;
   text-align: center;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
 }
 .overlay-spinner {
   width: 32px;
   height: 32px;
-  border: 4px solid #EBF2FF;
-  border-top: 4px solid #1A56DB;
+  border: 4px solid var(--blue-light);
+  border-top: 4px solid var(--blue);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   margin: 0 auto 12px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ヘルプツールチップ */
+/* ========== ヘルプツールチップ ========== */
 .help-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  background: #9ca3af;
+  width: 17px;
+  height: 17px;
+  background: var(--text-light);
   color: white;
   border-radius: 50%;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   cursor: pointer;
   margin-left: 6px;
   vertical-align: middle;
   position: relative;
   flex-shrink: 0;
+  transition: background 0.12s;
 }
+.help-badge:hover { background: var(--blue); }
 .help-badge .tooltip {
   display: none;
   position: fixed;
-  background: #1a1a1a;
-  color: #fff;
+  background: #1e293b;
+  color: #e2e8f0;
   font-size: 12px;
   font-weight: 400;
-  line-height: 1.5;
-  padding: 8px 12px;
+  line-height: 1.6;
+  padding: 10px 14px;
   border-radius: 8px;
   z-index: 9999;
   pointer-events: none;
@@ -534,21 +690,21 @@ body {
   white-space: normal;
   word-break: break-all;
   text-align: left;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
   top: auto;
   left: auto;
 }
 .help-badge.open .tooltip { display: block; }
 
-/* 全体ヘルプパネル */
+/* ========== ヘルプパネル ========== */
 .help-panel {
-  background: #f0f9ff;
-  border: 1px solid #bae6fd;
-  border-radius: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
   padding: 14px 18px;
   margin-bottom: 20px;
   font-size: 13px;
-  color: #0c4a6e;
+  color: #1e40af;
   line-height: 1.7;
 }
 .help-panel h3 {
@@ -563,6 +719,13 @@ body {
 .help-panel .help-kurofune-only {
   color: #b45309;
   font-size: 12px;
+}
+
+/* ========== 区切り線 ========== */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 22px 0;
 }
 </style>
 </head>
@@ -584,194 +747,267 @@ body {
 
 <!-- メインアプリ -->
 <div id="mainApp">
-  <div class="topbar">
-    <h1>⚙️ 口コミ支援ツール 管理画面</h1>
-    <button class="btn-logout" onclick="doLogout()">ログアウト</button>
-  </div>
+  <div class="app-layout">
 
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="switchTab('tab-schools', this)">🏫 教室設定</button>
-    <button class="tab-btn" onclick="switchTab('tab-questions', this)">📝 設問編集</button>
-    <button class="tab-btn" onclick="switchTab('tab-prompt', this)">🤖 プロンプト</button>
-    <button class="tab-btn" onclick="switchTab('tab-design', this)">🎨 デザイン</button>
-    <button class="tab-btn" onclick="switchTab('tab-campaign', this)">🎁 キャンペーン</button>
-    <button class="tab-btn" onclick="switchTab('tab-qr', this)">📱 QRコード</button>
-    <button class="tab-btn" onclick="switchTab('tab-preview', this)">👁 プレビュー</button>
-    <button class="tab-btn" onclick="openLog()">📊 ログ確認</button>
-  </div>
+  <!-- サイドバー -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">⚙️ 管理画面</div>
+      <div class="sidebar-sub">口コミ支援ツール</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" onclick="switchTab('tab-schools', this)" data-tab="tab-schools">
+        <span class="nav-icon">🏫</span> 教室設定
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-questions', this)" data-tab="tab-questions">
+        <span class="nav-icon">📝</span> 設問編集
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-prompt', this)" data-tab="tab-prompt">
+        <span class="nav-icon">🤖</span> プロンプト
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-design', this)" data-tab="tab-design">
+        <span class="nav-icon">🎨</span> デザイン
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-campaign', this)" data-tab="tab-campaign">
+        <span class="nav-icon">🎁</span> キャンペーン
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-qr', this)" data-tab="tab-qr">
+        <span class="nav-icon">📱</span> QRコード
+      </button>
+      <button class="nav-item" onclick="switchTab('tab-preview', this)" data-tab="tab-preview">
+        <span class="nav-icon">👁</span> プレビュー
+      </button>
+      <button class="nav-item" onclick="openLog()">
+        <span class="nav-icon">📊</span> ログ確認
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="doLogout()">↩ ログアウト</button>
+    </div>
+  </aside>
+
+  <!-- メインコンテンツ -->
+  <div class="main-content">
 
   <!-- 教室設定 -->
   <div class="tab-content active" id="tab-schools">
-    <div class="card">
-      <h2>🏫 教室別 GBP URL 設定</h2>
-      <div class="card-sub">各教室のGoogleビジネスプロフィール 口コミ投稿URLを設定してください。</div>
-      <div id="schoolFields"></div>
-      <button class="btn-save" onclick="saveSchools()">💾 保存する</button>
+    <div class="page-header">
+      <span class="page-header-icon">🏫</span>
+      <h2>教室設定</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>GBP URL 設定</h2>
+        <div class="card-sub">各教室のGoogleビジネスプロフィール 口コミ投稿URLを設定してください。</div>
+        <div id="schoolFields"></div>
+        <button class="btn-save" onclick="saveSchools()">💾 保存する</button>
+      </div>
     </div>
   </div>
 
   <!-- 設問編集 -->
   <div class="tab-content" id="tab-questions">
-    <div class="card">
-      <h2>📝 設問・選択肢の編集
-        <span class="help-badge" onclick="this.classList.toggle('open')">?
-          <span class="tooltip">設問タイプ：<br>・single：選択肢から1つ選ぶ<br>・multi：複数選択できる<br>・free：自由記述テキストボックス<br><br>↑↓で設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に戻します（上書き）。</span>
-        </span>
-      </h2>
-      <div class="card-sub">ブランドを選んで設問を編集してください。</div>
-      <div class="brand-tabs">
-        <button class="brand-tab active" onclick="switchBrand('kurofune')">進学塾クロフネ</button>
-        <button class="brand-tab" onclick="switchBrand('ca')">コードアドベンチャー</button>
+    <div class="page-header">
+      <span class="page-header-icon">📝</span>
+      <h2>設問編集</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>設問・選択肢の編集
+          <span class="help-badge" onclick="this.classList.toggle('open')">?
+            <span class="tooltip">設問タイプ：<br>・single：選択肢から1つ選ぶ<br>・multi：複数選択できる<br>・free：自由記述テキストボックス<br><br>↑↓で設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に戻します（上書き）。</span>
+          </span>
+        </h2>
+        <div class="card-sub">ブランドを選んで設問を編集してください。</div>
+        <div class="brand-tabs">
+          <button class="brand-tab active" onclick="switchBrand('kurofune')">進学塾クロフネ</button>
+          <button class="brand-tab" onclick="switchBrand('ca')">コードアドベンチャー</button>
+        </div>
+        <div id="questionEditor"></div>
+        <button class="btn-save" onclick="saveQuestions()">💾 保存する</button>
+        <button class="btn-default" onclick="resetQuestions()">デフォルトに戻す</button>
       </div>
-      <div id="questionEditor"></div>
-      <button class="btn-save" onclick="saveQuestions()">💾 保存する</button>
-      <button class="btn-default" onclick="resetQuestions()">デフォルトに戻す</button>
     </div>
   </div>
 
   <!-- プロンプト -->
   <div class="tab-content" id="tab-prompt">
-    <div class="card">
-      <h2>🤖 AIシステムプロンプト</h2>
-      <div class="card-sub">口コミ文を生成する際のAIへの指示文を設定します。ブランドを選んで編集してください。</div>
-      <div class="brand-tabs">
-        <button class="brand-tab active" onclick="switchPromptBrand('kurofune')">進学塾クロフネ</button>
-        <button class="brand-tab" onclick="switchPromptBrand('ca')">コードアドベンチャー</button>
+    <div class="page-header">
+      <span class="page-header-icon">🤖</span>
+      <h2>プロンプト設定</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>AIシステムプロンプト</h2>
+        <div class="card-sub">口コミ文を生成する際のAIへの指示文を設定します。ブランドを選んで編集してください。</div>
+        <div class="brand-tabs">
+          <button class="brand-tab active" onclick="switchPromptBrand('kurofune')">進学塾クロフネ</button>
+          <button class="brand-tab" onclick="switchPromptBrand('ca')">コードアドベンチャー</button>
+        </div>
+        <div class="field-row">
+          <textarea class="prompt-area" id="promptArea"></textarea>
+        </div>
+        <div class="field-row" style="margin-top:16px;">
+          <label class="field-label">エピソード欄のサンプルテキスト（薄字ガイド）</label>
+          <input type="text" class="form-input" id="episodePlaceholderInput"
+            placeholder="例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。">
+          <div class="field-hint">アンケート最終画面のテキストエリアに薄字で表示されます。空欄の場合はデフォルト文言を使用します。</div>
+        </div>
+        <button class="btn-save" onclick="savePrompt()">💾 保存する</button>
+        <button class="btn-default" onclick="resetPrompt()">デフォルトに戻す</button>
       </div>
-      <div class="field-row">
-        <textarea class="prompt-area" id="promptArea"></textarea>
-      </div>
-      <div class="field-row" style="margin-top:16px;">
-        <label class="field-label">📝 エピソード欄のサンプルテキスト（薄字ガイド）</label>
-        <input type="text" class="form-input" id="episodePlaceholderInput"
-          placeholder="例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。">
-        <div class="field-hint">アンケート最終画面のテキストエリアに薄字で表示されます。空欄の場合はデフォルト文言を使用します。</div>
-      </div>
-      <button class="btn-save" onclick="savePrompt()">💾 保存する</button>
-      <button class="btn-default" onclick="resetPrompt()">デフォルトに戻す</button>
     </div>
   </div>
 
   <!-- デザイン -->
   <div class="tab-content" id="tab-design">
-    <div class="card">
-      <h2>🎨 デザイン設定</h2>
-      <div class="card-sub">各ブランドのロゴとブランドカラーを設定します。</div>
+    <div class="page-header">
+      <span class="page-header-icon">🎨</span>
+      <h2>デザイン設定</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>ブランドカラー・ロゴ設定</h2>
+        <div class="card-sub">各ブランドのロゴとブランドカラーを設定します。</div>
 
-      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#333;">進学塾クロフネ</div>
-      <div class="field-row">
-        <label>ロゴ画像URL</label>
-        <input type="url" class="form-input" id="logoKurofune" placeholder="https://...（未設定の場合は教室名テキストを表示）">
-      </div>
-      <div class="field-row">
-        <label>ブランドカラー</label>
-        <div class="color-row">
-          <input type="color" class="color-picker" id="colorKurofunePicker" value="#1A56DB" oninput="syncColor('kurofune')">
-          <input type="text" class="color-hex" id="colorKurofuneHex" value="#1A56DB" oninput="syncColorFromHex('kurofune')" maxlength="7">
+        <div class="brand-section-title">進学塾クロフネ</div>
+        <div class="field-row">
+          <label>ロゴ画像URL</label>
+          <input type="url" class="form-input" id="logoKurofune" placeholder="https://...（未設定の場合は教室名テキストを表示）">
         </div>
-      </div>
-
-      <hr style="margin:20px 0;border:none;border-top:1px solid #e5e7eb;">
-
-      <div style="font-weight:700;font-size:14px;margin-bottom:12px;color:#333;">コードアドベンチャー</div>
-      <div class="field-row">
-        <label>ロゴ画像URL</label>
-        <input type="url" class="form-input" id="logoCa" placeholder="https://...（未設定の場合は教室名テキストを表示）">
-      </div>
-      <div class="field-row">
-        <label>ブランドカラー</label>
-        <div class="color-row">
-          <input type="color" class="color-picker" id="colorCaPicker" value="#E3A008" oninput="syncColor('ca')">
-          <input type="text" class="color-hex" id="colorCaHex" value="#E3A008" oninput="syncColorFromHex('ca')" maxlength="7">
+        <div class="field-row">
+          <label>ブランドカラー</label>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="colorKurofunePicker" value="#1A56DB" oninput="syncColor('kurofune')">
+            <input type="text" class="color-hex" id="colorKurofuneHex" value="#1A56DB" oninput="syncColorFromHex('kurofune')" maxlength="7">
+          </div>
         </div>
-      </div>
 
-      <button class="btn-save" onclick="saveDesign()">💾 保存する</button>
+        <hr class="section-divider">
+
+        <div class="brand-section-title">コードアドベンチャー</div>
+        <div class="field-row">
+          <label>ロゴ画像URL</label>
+          <input type="url" class="form-input" id="logoCa" placeholder="https://...（未設定の場合は教室名テキストを表示）">
+        </div>
+        <div class="field-row">
+          <label>ブランドカラー</label>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="colorCaPicker" value="#E3A008" oninput="syncColor('ca')">
+            <input type="text" class="color-hex" id="colorCaHex" value="#E3A008" oninput="syncColorFromHex('ca')" maxlength="7">
+          </div>
+        </div>
+
+        <button class="btn-save" onclick="saveDesign()">💾 保存する</button>
+      </div>
     </div>
   </div>
 
-  <!-- プレビュー -->
-  <div class="tab-content" id="tab-preview">
-    <div class="card" style="max-width:900px;">
-      <h2>👁 ユーザー画面プレビュー</h2>
-      <div class="card-sub">実際のアンケート画面をここで確認できます。設定変更後は「再読み込み」を押してください。</div>
-      <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
-        <div>
-          <label class="field-label" style="margin-bottom:4px;">教室</label>
-          <select class="q-type-select" id="previewSchoolSelect" onchange="updatePreview()">
-            <option value="kurofune_kurihama">クロフネ 久里浜</option>
-            <option value="kurofune_kitakurihama">クロフネ 北久里浜</option>
-            <option value="ca_kurihama">CA 久里浜</option>
-            <option value="ca_kitakurihama">CA 北久里浜</option>
-          </select>
-        </div>
-        <button class="btn-save" style="margin-top:18px;" onclick="updatePreview()">🔄 再読み込み</button>
-      </div>
-      <div style="border:2px solid #e5e7eb; border-radius:12px; overflow:hidden; background:#f9fafb;">
-        <div style="background:#e5e7eb; padding:6px 12px; font-size:12px; color:#666; display:flex; align-items:center; gap:8px;">
-          <span>📱 スマートフォン表示プレビュー</span>
-        </div>
-        <div style="display:flex; justify-content:center; padding:20px; background:#f3f4f6;">
-          <iframe id="previewFrame"
-            src=""
-            style="width:390px; height:700px; border:none; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.15); background:#fff;"
-          ></iframe>
-        </div>
-      </div>
-    </div>
-  </div>
+
 
   <!-- キャンペーン -->
   <div class="tab-content" id="tab-campaign">
-    <div class="card">
-      <h2>🎁 キャンペーン設定</h2>
-      <div class="card-sub">キャンペーンON期間中は、口コミ画面に名前入力欄と特典バナーが表示されます。</div>
+    <div class="page-header">
+      <span class="page-header-icon">🎁</span>
+      <h2>キャンペーン設定</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>キャンペーン管理</h2>
+        <div class="card-sub">キャンペーンON期間中は、口コミ画面に名前入力欄と特典バナーが表示されます。</div>
 
-      <div class="toggle-row">
-        <label class="toggle">
-          <input type="checkbox" id="campaignActive">
-          <span class="toggle-slider"></span>
-        </label>
-        <span class="toggle-label">キャンペーンを有効にする
-          <span class="help-badge" onclick="this.classList.toggle('open')">?
-            <span class="tooltip">ONにすると口コミ画面に名前入力欄と特典バナーが表示されます。誰が口コミを書いたか確認したい場合やプレゼント配布時に使用してください。</span>
+        <div class="toggle-row">
+          <label class="toggle">
+            <input type="checkbox" id="campaignActive">
+            <span class="toggle-slider"></span>
+          </label>
+          <span class="toggle-label">キャンペーンを有効にする
+            <span class="help-badge" onclick="this.classList.toggle('open')">?
+              <span class="tooltip">ONにすると口コミ画面に名前入力欄と特典バナーが表示されます。誰が口コミを書いたか確認したい場合やプレゼント配布時に使用してください。</span>
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
 
-      <div class="field-row">
-        <label>キャンペーン名</label>
-        <input type="text" class="form-input" id="campaignName" placeholder="例：春の口コミキャンペーン">
-      </div>
-      <div class="field-row">
-        <label>開始日</label>
-        <input type="date" class="form-input" id="campaignStart">
-      </div>
-      <div class="field-row">
-        <label>終了日</label>
-        <input type="date" class="form-input" id="campaignEnd">
-      </div>
-      <div class="field-row">
-        <label>特典内容
-          <span class="help-badge" onclick="this.classList.toggle('open')">?
-            <span class="tooltip">口コミ画面に表示する特典の説明文です。<br>例：「図書カード500円分プレゼント」</span>
-          </span>
-        </label>
-        <input type="text" class="form-input" id="campaignReward" placeholder="例：口コミを書いてくれた方に図書カード500円分プレゼント">
-      </div>
+        <div class="field-row">
+          <label>キャンペーン名</label>
+          <input type="text" class="form-input" id="campaignName" placeholder="例：春の口コミキャンペーン">
+        </div>
+        <div class="field-row">
+          <label>開始日</label>
+          <input type="date" class="form-input" id="campaignStart">
+        </div>
+        <div class="field-row">
+          <label>終了日</label>
+          <input type="date" class="form-input" id="campaignEnd">
+        </div>
+        <div class="field-row">
+          <label>特典内容
+            <span class="help-badge" onclick="this.classList.toggle('open')">?
+              <span class="tooltip">口コミ画面に表示する特典の説明文です。<br>例：「図書カード500円分プレゼント」</span>
+            </span>
+          </label>
+          <input type="text" class="form-input" id="campaignReward" placeholder="例：口コミを書いてくれた方に図書カード500円分プレゼント">
+        </div>
 
-      <button class="btn-save" onclick="saveCampaign()">💾 保存する</button>
+        <button class="btn-save" onclick="saveCampaign()">💾 保存する</button>
+      </div>
     </div>
   </div>
 
   <!-- QRコード -->
   <div class="tab-content" id="tab-qr">
-    <div class="card">
-      <h2>📱 QRコード発行</h2>
-      <div class="card-sub">各教室のQRコードを生成してPNGでダウンロードできます。</div>
-      <div class="qr-grid" id="qrGrid"></div>
+    <div class="page-header">
+      <span class="page-header-icon">📱</span>
+      <h2>QRコード発行</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>QRコード一覧</h2>
+        <div class="card-sub">各教室のQRコードを生成してPNGでダウンロードできます。</div>
+        <div class="qr-grid" id="qrGrid"></div>
+      </div>
     </div>
   </div>
+
+  <!-- プレビュー -->
+  <div class="tab-content" id="tab-preview">
+    <div class="page-header">
+      <span class="page-header-icon">👁</span>
+      <h2>プレビュー</h2>
+    </div>
+    <div class="page-body" style="max-width:960px;">
+      <div class="card">
+        <h2>ユーザー画面プレビュー</h2>
+        <div class="card-sub">実際のアンケート画面をここで確認できます。設定変更後は「再読み込み」を押してください。</div>
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:16px; flex-wrap:wrap;">
+          <div>
+            <label class="field-label" style="margin-bottom:4px;">教室</label>
+            <select class="q-type-select" id="previewSchoolSelect" onchange="updatePreview()">
+              <option value="kurofune_kurihama">クロフネ 久里浜</option>
+              <option value="kurofune_kitakurihama">クロフネ 北久里浜</option>
+              <option value="ca_kurihama">CA 久里浜</option>
+              <option value="ca_kitakurihama">CA 北久里浜</option>
+            </select>
+          </div>
+          <button class="btn-save" style="margin-top:18px;" onclick="updatePreview()">🔄 再読み込み</button>
+        </div>
+        <div style="border:1.5px solid var(--border); border-radius:var(--radius); overflow:hidden; background:var(--surface2);">
+          <div style="background:var(--surface); padding:8px 14px; font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px; border-bottom:1px solid var(--border);">
+            <span>📱 スマートフォン表示プレビュー</span>
+          </div>
+          <div style="display:flex; justify-content:center; padding:24px; background:var(--surface2);">
+            <iframe id="previewFrame"
+              src=""
+              style="width:390px; height:700px; border:none; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); background:#fff;"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /.main-content -->
+  </div><!-- /.app-layout -->
 </div>
 
 <!-- ステータスバー -->
@@ -950,7 +1186,7 @@ function updatePreview() {
 
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
   // プレビュータブを開いたら自動ロード
@@ -959,7 +1195,7 @@ function switchTab(id, btn) {
 
 function openLog() {
   // ログ確認はタブを切り替えないが、アクティブ状態を他タブから外す
-  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
   var url = (_adminData && _adminData.spreadsheetUrl) ? _adminData.spreadsheetUrl : '';
   if (url) {
     window.open(url, '_blank');
