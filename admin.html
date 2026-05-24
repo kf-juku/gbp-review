@@ -519,10 +519,7 @@ body {
 }
 .help-badge .tooltip {
   display: none;
-  position: absolute;
-  left: 50%;
-  bottom: calc(100% + 6px);
-  transform: translateX(-50%);
+  position: fixed;
   background: #1a1a1a;
   color: #fff;
   font-size: 12px;
@@ -530,15 +527,17 @@ body {
   line-height: 1.5;
   padding: 8px 12px;
   border-radius: 8px;
-  white-space: nowrap;
-  z-index: 100;
+  z-index: 9999;
   pointer-events: none;
-  max-width: 260px;
+  width: 220px;
+  max-width: 220px;
   white-space: normal;
+  word-break: break-all;
   text-align: left;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  top: auto;
+  left: auto;
 }
-.help-badge:hover .tooltip,
 .help-badge.open .tooltip { display: block; }
 
 /* 全体ヘルプパネル */
@@ -823,6 +822,48 @@ window.addEventListener('DOMContentLoaded', function() {
   document.getElementById('pwInput').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') doLogin();
   });
+
+  // ヘルプバッジ：ホバーでツールチップを画面内に収まる位置に表示
+  document.addEventListener('mouseover', function(e) {
+    var badge = e.target.closest('.help-badge');
+    if (!badge) return;
+    var tooltip = badge.querySelector('.tooltip');
+    if (!tooltip) return;
+    badge.classList.add('open');
+    var rect = badge.getBoundingClientRect();
+    var tw = 220;
+    var margin = 8;
+    // 右側に収まるか確認
+    var left = rect.right + margin;
+    if (left + tw > window.innerWidth) {
+      left = rect.left - tw - margin;  // 左側に出す
+    }
+    var top = rect.top + rect.height / 2 - 20;
+    if (top < margin) top = margin;
+    if (top + 80 > window.innerHeight) top = window.innerHeight - 80 - margin;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+  });
+  document.addEventListener('mouseout', function(e) {
+    var badge = e.target.closest('.help-badge');
+    if (!badge) return;
+    if (!badge.contains(e.relatedTarget)) {
+      badge.classList.remove('open');
+    }
+  });
+
+  // スマホ対応：タップで開閉
+  document.addEventListener('click', function(e) {
+    var badge = e.target.closest('.help-badge');
+    if (badge) {
+      e.stopPropagation();
+      badge.classList.toggle('open');
+      return;
+    }
+    document.querySelectorAll('.help-badge.open').forEach(function(b) {
+      b.classList.remove('open');
+    });
+  });
 });
 
 function doLogin() {
@@ -903,7 +944,7 @@ function updatePreview() {
   // iframeを一旦空にしてから再セット（キャッシュ回避）
   frame.src = 'about:blank';
   setTimeout(function() {
-    frame.src = './kuchikomi.html?tenant=' + TENANT + '&school=' + school;
+    frame.src = './index.html?tenant=' + TENANT + '&school=' + school;
   }, 50);
 }
 
@@ -1285,7 +1326,7 @@ function saveCampaign() {
 // QRコードタブ
 // ============================================================
 function renderQR() {
-  var baseUrl = location.origin + location.pathname.replace('admin.html', 'kuchikomi.html');
+  var baseUrl = location.origin + location.pathname.replace('admin.html', 'index.html');
   var grid = document.getElementById('qrGrid');
   grid.innerHTML = '';
   SCHOOLS.forEach(function(s) {
