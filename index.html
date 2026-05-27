@@ -651,7 +651,7 @@ body {
   <!-- 画面1: 名前入力（キャンペーン時のみ） -->
   <div class="screen" id="screen-name">
     <div class="campaign-banner" id="campaignBanner">
-      <div class="campaign-icon">🎁</div>
+      <div class="campaign-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 6v10h10V6H3zm9 9H4V7h8v8zM1 4h14v2H1V4zm6-4h2v3H7V0zm3.5 1.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg></div>
       <div class="campaign-title" id="campaignTitle">キャンペーン開催中！</div>
       <div class="campaign-reward" id="campaignReward"></div>
     </div>
@@ -659,7 +659,7 @@ body {
       <h2>お名前を教えてください</h2>
       <div class="name-hint">口コミを書いていただいた方に特典をお渡しします。</div>
       <div class="name-privacy-note">
-        ⚠️ 入力したお名前はGoogleの口コミには表示されません。スタッフの確認のみに使用します。
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1L0 15h16L8 1zm0 3l5.5 10h-11L8 4zm-.5 3v3h1V7h-1zm0 4v1h1v-1h-1z"/></svg> 入力したお名前はGoogleの口コミには表示されません。スタッフの確認のみに使用します。
       </div>
       <input type="text" class="input-field" id="nameInput" placeholder="例：山田 太郎" maxlength="30">
       <br><br>
@@ -743,7 +743,7 @@ body {
 
 </div>
 
-<div class="toast" id="toast">📋 コピーしました！★をつけて文章を貼り付けてください</div>
+<div class="toast" id="toast"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M4 1h8a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm0 1v12h8V2H4zm1 2h6v1H5V4zm0 2h6v1H5V6zm0 2h4v1H5V8z"/></svg> コピーしました！★をつけて文章を貼り付けてください</div>
 
 <script>
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbx8axUPMp0B0bfwkdyUODxpd0J15v8d5eNm2cyL9oWz-UvnanBAC83-3Tf4ZKkPz1hQ/exec';
@@ -804,7 +804,7 @@ function fetchConfig() {
       }
       _config = data;
       applyConfig(data);
-      startFlow();
+      tryResume();
     })
     .catch(function() {
       showError(
@@ -821,7 +821,13 @@ function applyConfig(cfg) {
   document.documentElement.style.setProperty('--brand', color);
   // 明暗は簡易計算（暗め）
   document.documentElement.style.setProperty('--brand-dark', shadeColor(color, -20));
-  document.documentElement.style.setProperty('--brand-light', shadeColor(color, 80) + '33');
+  (function() {
+    var _hex = shadeColor(color, 80).replace('#', '');
+    var _r = parseInt(_hex.substring(0, 2), 16);
+    var _g = parseInt(_hex.substring(2, 4), 16);
+    var _b = parseInt(_hex.substring(4, 6), 16);
+    document.documentElement.style.setProperty('--brand-light', 'rgba(' + _r + ',' + _g + ',' + _b + ',0.2)');
+  })();
 
   // 学校名
   document.getElementById('schoolName').textContent = cfg.schoolName || '';
@@ -959,6 +965,7 @@ function renderStep() {
     ta.value = _answers[_currentStep] || '';
     ta.addEventListener('input', function() {
       _answers[_currentStep] = ta.value;
+      _saveProgress();
     });
     area.appendChild(ta);
     var hint = document.createElement('div');
@@ -976,6 +983,7 @@ function renderStep() {
       btn.textContent = choice;
       btn.onclick = function() {
         _answers[_currentStep] = choice;
+        _saveProgress();
         if (isLast) {
           startGenerate();
         } else {
@@ -990,7 +998,7 @@ function renderStep() {
     // 複数選択バッジ
     var multiBadge = document.createElement('div');
     multiBadge.className = 'multi-badge';
-    multiBadge.textContent = '☑ 複数選べます（当てはまるものをすべてタップ）';
+    multiBadge.innerHTML = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg> 複数選べます（当てはまるものをすべてタップ）';
     area.appendChild(multiBadge);
     var list2 = document.createElement('div');
     list2.className = 'choice-list';
@@ -1130,10 +1138,12 @@ function copyAndOpen() {
   // クリップボードコピー → 成功・失敗どちらでも完了画面へ
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(function() {
+      _clearProgress();
       showToast();
       showScreen('screen-complete');
     }).catch(function() {
       fallbackCopy(text);
+      _clearProgress();
       showScreen('screen-complete');
     });
   } else {
