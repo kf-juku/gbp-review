@@ -1066,28 +1066,77 @@ function renderStep() {
     area.appendChild(multiBadge);
     var list2 = document.createElement('div');
     list2.className = 'choice-list';
+    // その他入力欄（multi用）
+    var otherWrapM = document.createElement('div');
+    otherWrapM.className = 'other-input-wrap';
+    var otherTextM = document.createElement('textarea');
+    otherTextM.className = 'other-input';
+    otherTextM.placeholder = 'その他の内容を入力してください';
+    otherTextM.rows = 3;
+    otherWrapM.appendChild(otherTextM);
+    // selectedの中にその他：〜が含まれていたら入力欄を復元
+    var otherExisting = selected.filter(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; });
+    if (otherExisting.length > 0) {
+      otherWrapM.classList.add('open');
+      otherTextM.value = otherExisting[0].replace('その他：', '');
+    }
     q.choices.forEach(function(choice) {
       var btn = document.createElement('button');
-      btn.className = 'choice-item' + (selected.indexOf(choice) >= 0 ? ' selected' : '');
+      var isOther = (choice === 'その他');
+      var isSelected = isOther
+        ? (selected.some(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; }))
+        : (selected.indexOf(choice) >= 0);
+      btn.className = 'choice-item' + (isSelected ? ' selected' : '');
       btn.innerHTML = '<span class="choice-check"></span><span>' + escHtml(choice) + '</span>';
       btn.onclick = function() {
-        var idx = selected.indexOf(choice);
-        if (idx >= 0) {
-          selected.splice(idx, 1);
-          btn.classList.remove('selected');
+        if (isOther) {
+          var otherIdx = selected.findIndex(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; });
+          if (otherIdx >= 0) {
+            // 選択解除
+            selected.splice(otherIdx, 1);
+            btn.classList.remove('selected');
+            otherWrapM.classList.remove('open');
+          } else {
+            // 選択
+            selected.push('その他：' + otherTextM.value.trim());
+            btn.classList.add('selected');
+            otherWrapM.classList.add('open');
+            otherTextM.focus();
+          }
         } else {
-          selected.push(choice);
-          btn.classList.add('selected');
+          var idx = selected.indexOf(choice);
+          if (idx >= 0) {
+            selected.splice(idx, 1);
+            btn.classList.remove('selected');
+          } else {
+            selected.push(choice);
+            btn.classList.add('selected');
+          }
         }
         _answers[_currentStep] = selected.slice();
         _saveProgress();
+        var hasAnswer = selected.length > 0 && !(selected.length === 1 && selected[0] === 'その他：');
         if (isLast) {
-          generateBtn.disabled = (selected.length === 0);
+          generateBtn.disabled = !hasAnswer;
         } else {
-          nextBtn.disabled = (selected.length === 0);
+          nextBtn.disabled = !hasAnswer;
         }
       };
-      list2.appendChild(btn);
+      if (isOther) {
+        list2.appendChild(btn);
+        list2.appendChild(otherWrapM);
+        // その他テキスト入力時にselectedを更新
+        otherTextM.addEventListener('input', function() {
+          var otherIdx = selected.findIndex(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; });
+          if (otherIdx >= 0) {
+            selected[otherIdx] = 'その他：' + otherTextM.value.trim();
+            _answers[_currentStep] = selected.slice();
+            _saveProgress();
+          }
+        });
+      } else {
+        list2.appendChild(btn);
+      }
     });
     area.appendChild(list2);
     if (isLast) {
