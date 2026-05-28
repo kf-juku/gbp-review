@@ -637,6 +637,31 @@ body {
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
+
+.other-input-wrap {
+  display: none;
+  margin-top: 6px;
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.other-input-wrap.open { display: block; }
+.other-input {
+  width: 100%;
+  border: 1.5px solid var(--brand);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text);
+  background: white;
+  resize: none;
+  outline: none;
+  min-height: 70px;
+  box-shadow: 0 0 0 3px var(--brand-light);
+  box-sizing: border-box;
+}
+.other-input::placeholder { color: var(--text-light); }
+
 </style>
 </head>
 <body>
