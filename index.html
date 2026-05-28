@@ -640,27 +640,34 @@ body {
 
 .other-input-wrap {
   display: none;
-  margin-top: 6px;
+  margin-top: 8px;
   margin-bottom: 4px;
-  padding: 0 4px;
+  padding: 0 2px;
 }
 .other-input-wrap.open { display: block; }
 .other-input {
   width: 100%;
   border: 1.5px solid var(--brand);
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 14px;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
   font-family: inherit;
   color: var(--text);
-  background: white;
+  background: #fafbff;
   resize: none;
   outline: none;
-  min-height: 70px;
+  min-height: 80px;
   box-shadow: 0 0 0 3px var(--brand-light);
   box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  line-height: 1.6;
 }
-.other-input::placeholder { color: var(--text-light); }
+.other-input:focus {
+  background: white;
+  box-shadow: 0 0 0 4px var(--brand-light);
+}
+.other-input::placeholder { color: var(--text-light); font-size: 14px; }
 
 </style>
 </head>
@@ -1138,6 +1145,7 @@ function renderStep() {
     var list2 = document.createElement('div');
     list2.className = 'choice-list';
     // その他入力欄（multi用）
+    // その他入力欄（multi用）- forEach内で「その他」ボタン直後に追加する
     var otherWrapM = document.createElement('div');
     otherWrapM.className = 'other-input-wrap';
     var otherTextM = document.createElement('textarea');
@@ -1145,12 +1153,8 @@ function renderStep() {
     otherTextM.placeholder = 'その他の内容を入力してください';
     otherTextM.rows = 3;
     otherWrapM.appendChild(otherTextM);
-    // selectedの中にその他：〜が含まれていたら入力欄を復元
+    // selectedの中にその他：〜が含まれていたら展開フラグを立てる（DOMはforEach内で追加後に適用）
     var otherExisting = selected.filter(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; });
-    if (otherExisting.length > 0) {
-      otherWrapM.classList.add('open');
-      otherTextM.value = otherExisting[0].replace('その他：', '');
-    }
     q.choices.forEach(function(choice) {
       var btn = document.createElement('button');
       var isOther = (choice === 'その他');
@@ -1196,6 +1200,11 @@ function renderStep() {
       if (isOther) {
         list2.appendChild(btn);
         list2.appendChild(otherWrapM);
+        // DOM追加後に展開状態を適用
+        if (otherExisting.length > 0) {
+          otherWrapM.classList.add('open');
+          otherTextM.value = otherExisting[0].replace('その他：', '');
+        }
         // その他テキスト入力時にselectedを更新
         otherTextM.addEventListener('input', function() {
           var otherIdx = selected.findIndex(function(s){ return typeof s === 'string' && s.indexOf('その他：') === 0; });
