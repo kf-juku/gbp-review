@@ -814,6 +814,17 @@ body {
   min-height: 400px;
   max-height: 900px;
 }
+/* .tt ツールチップ（動的生成要素用） */
+.tt { position: relative; display: inline-flex; align-items: center; }
+.tt-body {
+  display: none; position: fixed; z-index: 9000;
+  background: #1e293b; color: white; font-size: 11px;
+  border-radius: 7px; padding: 8px 11px; line-height: 1.6;
+  max-width: 260px; pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  white-space: normal;
+}
+
 .pv-mode-btn {
   flex: 1; padding: 7px 6px; border-radius: 8px; border: 1.5px solid var(--border);
   background: white; color: var(--text-muted); font-size: 11px; font-weight: 600;
@@ -1278,6 +1289,33 @@ window.addEventListener('DOMContentLoaded', function() {
       badge.classList.remove('open');
     }
   });
+
+  // .tt / .tt-body クラス用ツールチップ（動的生成要素対応）
+  (function(){
+    var PAD = 8;
+    document.addEventListener('mouseover', function(e) {
+      var tt = e.target.closest('.tt');
+      if (!tt) return;
+      var body = tt.querySelector('.tt-body');
+      if (!body) return;
+      body.style.cssText = 'display:block;visibility:hidden;position:fixed;left:0;top:0;max-width:260px;';
+      var bw = body.offsetWidth || 260, bh = body.offsetHeight || 40;
+      var r = tt.getBoundingClientRect();
+      var left = r.left + r.width / 2 - bw / 2;
+      var top = r.top - bh - PAD;
+      if (top < PAD) top = r.bottom + PAD;
+      if (left < PAD) left = PAD;
+      if (left + bw > window.innerWidth - PAD) left = window.innerWidth - bw - PAD;
+      body.style.cssText = 'display:block;visibility:visible;position:fixed;left:'+left+'px;top:'+top+'px;max-width:260px;z-index:9000;';
+    });
+    document.addEventListener('mouseout', function(e) {
+      var tt = e.target.closest('.tt');
+      if (!tt) return;
+      if (tt.contains(e.relatedTarget)) return;
+      var body = tt.querySelector('.tt-body');
+      if (body) body.style.display = 'none';
+    });
+  })();
 
   // スマホ対応：タップで開閉
   document.addEventListener('click', function(e) {
