@@ -8,9 +8,9 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --brand: #1a1a2e;
-  --brand-light: rgba(26,26,46,0.08);
-  --brand-dark: #0d0d1a;
+  --brand: #1A56DB;
+  --brand-light: rgba(26,86,219,0.10);
+  --brand-dark: #1648c0;
   --surface: #f7f8fa;
   --surface2: #ffffff;
   --border: #e8eaed;
@@ -402,7 +402,7 @@ body {
 
 .btn-primary {
   background: var(--brand);
-  color: white;
+  color: #fff !important;
 }
 .btn-primary:not(:disabled):hover { background: var(--brand-dark); }
 
@@ -594,6 +594,19 @@ body {
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
+}
+.copy-done-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 6px 16px;
+  margin-bottom: 16px;
+  letter-spacing: 0.01em;
 }
 
 /* ==============================
@@ -852,21 +865,22 @@ body {
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h2>ありがとうございました！</h2>
-      <p>口コミのご協力に感謝します。<br>Google口コミ画面で星の数を選び、<br>内容を確認して投稿してください。</p>
+      <h2>文章をコピーしました！</h2>
+      <div class="copy-done-badge">📋 クリップボードに保存済み</div>
+      <p style="margin-top:16px;">あとは貼り付けるだけで投稿できます。</p>
       <div class="steps-guide">
-        <div class="guide-title">📋 Googleへの投稿手順</div>
+        <div class="guide-title">Googleへの投稿手順</div>
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div>自動で開いたGoogleのページで星をタップ</div>
+          <div>自動で開いたGoogleのページで<strong>星をタップ</strong></div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
-          <div>口コミ欄に文章を貼り付け（長押し→貼り付け）</div>
+          <div>口コミ欄を<strong>長押し→「貼り付け」</strong>をタップ</div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">3</div>
-          <div>「投稿する」をタップして完了</div>
+          <div><strong>「投稿する」</strong>をタップして完了！</div>
         </div>
       </div>
       <button class="btn btn-secondary" onclick="restart()">最初からやり直す</button>
@@ -965,7 +979,10 @@ function applyConfig(cfg) {
   // ブランドカラー
   var color = cfg.brandColor || '#1a1a2e';
   document.documentElement.style.setProperty('--brand', color);
-  document.documentElement.style.setProperty('--brand-dark', shadeColor(color, -20));
+  var darkColor = shadeColor(color, -20);
+  if (darkColor && darkColor !== '#NaNNaNNaN') {
+    document.documentElement.style.setProperty('--brand-dark', darkColor);
+  }
   (function() {
     var hex = shadeColor(color, 80).replace('#', '');
     var r = parseInt(hex.substring(0, 2), 16);

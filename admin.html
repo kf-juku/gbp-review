@@ -850,6 +850,7 @@ body {
   flex-direction: column;
   background: var(--surface);
   overflow: hidden;
+  min-height: 0;
 }
 .preview-device-bar {
   padding: 8px 16px;
@@ -1376,7 +1377,7 @@ body {
           <iframe id="previewFrame" src="" style="width:360px;border:none;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:#fff;display:block;"></iframe>
         </div>
         <!-- 全画面一覧モード -->
-        <div id="pvGalleryWrap" style="display:none;overflow-y:auto;flex:1;padding:20px 16px;">
+        <div id="pvGalleryWrap" style="display:none;overflow-y:auto;flex:1;min-height:0;padding:20px 16px;">
           <div id="pvGalleryGrid" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:flex-start;"></div>
         </div>
       </div>
@@ -2657,6 +2658,11 @@ function postSave(payload, callback, successMsg) {
       if (d.success) {
         showStatus(successMsg || '保存しました ✅', 'success');
         if (callback) callback();
+        // プレビュータブが開いていればギャラリーを自動再描画
+        if (_pvMode === 'gallery' && document.getElementById('tab-preview') &&
+            document.getElementById('tab-preview').classList.contains('active')) {
+          renderGallery();
+        }
       } else {
         showStatus('保存に失敗しました: ' + (d.error || '不明なエラー'), 'error');
       }
