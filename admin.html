@@ -1084,13 +1084,57 @@ body {
             <li id="helpCostItem" style="display:none;">API利用料は月次でご請求します（クロフネ内部利用）。</li>
           </ul>
         </div>
+        <!-- UIパターン選択 -->
+        <div class="field-row">
+          <label class="field-label" style="font-weight:700;margin-bottom:8px;">UIパターン（ブランド別）</label>
+          <div class="field-hint" style="margin-bottom:12px;">アンケートの入力方式を選択します。ブランドごとに設定できます。</div>
+          <div style="display:flex;gap:32px;flex-wrap:wrap;">
+            <div>
+              <div style="font-weight:600;margin-bottom:6px;">進学塾クロフネ</div>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="radio" name="uiPatternKurofune" value="A" id="patternA_kurofune" onchange="saveUiPattern('kurofune','A')"> パターンA（選択肢メイン）
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
+                <input type="radio" name="uiPatternKurofune" value="B" id="patternB_kurofune" onchange="saveUiPattern('kurofune','B')"> パターンB（自由記述メイン）
+              </label>
+            </div>
+            <div>
+              <div style="font-weight:600;margin-bottom:6px;">コードアドベンチャー</div>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="radio" name="uiPatternCa" value="A" id="patternA_ca" onchange="saveUiPattern('ca','A')"> パターンA（選択肢メイン）
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
+                <input type="radio" name="uiPatternCa" value="B" id="patternB_ca" onchange="saveUiPattern('ca','B')"> パターンB（自由記述メイン）
+              </label>
+            </div>
+          </div>
+        </div>
+
         <div class="brand-tabs">
           <button class="brand-tab active" onclick="switchPromptBrand('kurofune')">進学塾クロフネ</button>
           <button class="brand-tab" onclick="switchPromptBrand('ca')">コードアドベンチャー</button>
         </div>
-        <div class="field-row">
-          <textarea class="prompt-area" id="promptArea"></textarea>
+
+        <!-- パターンA プロンプト -->
+        <div id="promptSectionA">
+          <div class="field-row" style="margin-bottom:4px;">
+            <label class="field-label">パターンAプロンプト（選択肢メイン）</label>
+          </div>
+          <div class="field-row">
+            <textarea class="prompt-area" id="promptArea"></textarea>
+          </div>
         </div>
+
+        <!-- パターンB プロンプト -->
+        <div id="promptSectionB">
+          <div class="field-row" style="margin-bottom:4px;margin-top:16px;">
+            <label class="field-label">パターンBプロンプト（自由記述メイン）</label>
+          </div>
+          <div class="field-row">
+            <textarea class="prompt-area" id="promptAreaB"></textarea>
+          </div>
+        </div>
+
         <div class="field-row" style="margin-top:16px;">
           <label class="field-label">エピソード欄のサンプルテキスト（薄字ガイド）</label>
           <input type="text" class="form-input" id="episodePlaceholderInput"
@@ -2294,20 +2338,41 @@ function switchPromptBrand(brand) {
 }
 
 function renderPromptArea() {
-  var prompts = _adminData.prompts || {};
-  document.getElementById('promptArea').value = prompts[_promptBrand] || '';
+  var prompts  = _adminData.prompts  || {};
+  var promptsB = _adminData.promptsB || {};
+  var patterns = _adminData.uiPatterns || {};
+  document.getElementById('promptArea').value  = prompts[_promptBrand]  || '';
+  document.getElementById('promptAreaB').value = promptsB[_promptBrand] || '';
   var eps = _adminData.episodePlaceholders || {};
   document.getElementById('episodePlaceholderInput').value = eps[_promptBrand] || '';
+  // UIパターンラジオボタンを反映
+  var patA_k = document.getElementById('patternA_kurofune');
+  var patB_k = document.getElementById('patternB_kurofune');
+  var patA_c = document.getElementById('patternA_ca');
+  var patB_c = document.getElementById('patternB_ca');
+  if (patA_k) patA_k.checked = (patterns.kurofune !== 'B');
+  if (patB_k) patB_k.checked = (patterns.kurofune === 'B');
+  if (patA_c) patA_c.checked = (patterns.ca !== 'B');
+  if (patB_c) patB_c.checked = (patterns.ca === 'B');
 }
 
 function savePrompt() {
-  var val = document.getElementById('promptArea').value;
-  var ep  = document.getElementById('episodePlaceholderInput').value;
-  if (!_adminData.prompts) _adminData.prompts = {};
+  var val  = document.getElementById('promptArea').value;
+  var valB = document.getElementById('promptAreaB').value;
+  var ep   = document.getElementById('episodePlaceholderInput').value;
+  if (!_adminData.prompts)  _adminData.prompts  = {};
+  if (!_adminData.promptsB) _adminData.promptsB = {};
   if (!_adminData.episodePlaceholders) _adminData.episodePlaceholders = {};
-  _adminData.prompts[_promptBrand] = val;
+  _adminData.prompts[_promptBrand]  = val;
+  _adminData.promptsB[_promptBrand] = valB;
   _adminData.episodePlaceholders[_promptBrand] = ep;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: val, episodePlaceholder: ep });
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: val, dataB: valB, episodePlaceholder: ep });
+}
+
+function saveUiPattern(brand, pattern) {
+  if (!_adminData.uiPatterns) _adminData.uiPatterns = {};
+  _adminData.uiPatterns[brand] = pattern;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'uiPattern', brand: brand, data: pattern });
 }
 
 function resetPrompt() {
