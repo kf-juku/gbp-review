@@ -1913,9 +1913,10 @@ function buildResultScreen(bInfo, schoolName, color) {
 function buildCompleteScreen(bInfo, schoolName, color) {
   return pvHeader(bInfo, schoolName, color) +
     '<div class="pv-card-body"><div class="pv-complete-wrap">' +
-    '<div class="pv-complete-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg></div>' +
-    '<div style="font-size:16px;font-weight:800;color:#1a2535;margin-bottom:8px;letter-spacing:-0.02em;">ありがとうございました！</div>' +
-    '<div style="font-size:11px;color:#64748b;line-height:1.7;">口コミのご協力に感謝します。<br>Google口コミ画面で星の数を選び、<br>内容を確認して投稿してください。</div>' +
+    '<div class="pv-complete-icon" style="background:#d1fae5;"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+    '<div style="font-size:16px;font-weight:800;color:#1a2535;margin-bottom:8px;letter-spacing:-0.02em;">文章をコピーしました！</div>' +
+    '<div style="display:inline-flex;align-items:center;gap:6px;background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;border-radius:999px;padding:4px 12px;margin-bottom:10px;">📋 クリップボードに保存済み</div>' +
+    '<div style="font-size:11px;color:#64748b;line-height:1.7;">あとは貼り付けるだけで投稿できます。</div>' +
     '</div></div>';
 }
 

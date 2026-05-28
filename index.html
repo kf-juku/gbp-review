@@ -812,7 +812,8 @@ body {
       <textarea id="freeTextB" rows="8" class="free-text-area" oninput="updateGenerateBtnB()"></textarea>
     </div>
     <div style="font-size:0.78rem;color:var(--text-sub);margin-top:10px;text-align:center;">入力内容をもとに、投稿しやすい文章に整えています</div>
-    <button class="btn btn-primary" id="generateBtnB" onclick="startGenerateB()" style="margin-top:12px;" disabled>文章を整える</button>
+    <div id="freeLenHint" style="display:none;font-size:12px;color:#dc2626;text-align:center;margin-top:8px;"></div>
+    <button class="btn btn-primary" id="generateBtnB" onclick="startGenerateB()" style="margin-top:8px;" disabled>文章を整える</button>
   </div>
 
   <!-- 画面3: AI生成中 -->
@@ -1151,9 +1152,22 @@ function initSurveyB() {
 
 function updateGenerateBtnB() {
   var ftEl = document.getElementById('freeTextB');
-  var hasFree = ftEl && ftEl.value.trim().length > 0;
+  var freeVal = ftEl ? ftEl.value.trim() : '';
+  var freeLen = freeVal.length;
+  var hasFree = freeLen >= 5;
+  var hasSelected = _bSelected.length > 0;
   var btn = document.getElementById('generateBtnB');
-  if (btn) btn.disabled = !(_bSelected.length > 0 || hasFree);
+  var hint = document.getElementById('freeLenHint');
+  // ヒント表示：自由記述に何か入っているが5文字未満のとき
+  if (hint) {
+    if (freeLen > 0 && freeLen < 5) {
+      hint.style.display = 'block';
+      hint.textContent = 'あと' + (5 - freeLen) + '文字以上書いてください';
+    } else {
+      hint.style.display = 'none';
+    }
+  }
+  if (btn) btn.disabled = !(hasSelected || hasFree);
 }
 
 function goBackB() {
@@ -1163,6 +1177,14 @@ function goBackB() {
 
 function startGenerateB() {
   if (_isGenerating) return;
+  // 5文字未満チェック（選択肢なし＋自由記述不足の場合）
+  var ftEl = document.getElementById('freeTextB');
+  var freeVal = ftEl ? ftEl.value.trim() : '';
+  if (_bSelected.length === 0 && freeVal.length < 5) {
+    var hint = document.getElementById('freeLenHint');
+    if (hint) { hint.style.display = 'block'; hint.textContent = 'あと' + (5 - freeVal.length) + '文字以上書いてください'; }
+    return;
+  }
   if (_generateCount >= GENERATE_LIMIT) {
     showError('生成回数の上限に達しました',
       '1回の利用につき' + GENERATE_LIMIT + '回まで生成できます。最初からやり直すか、時間をおいてから再度お試しください。', null);
@@ -1193,6 +1215,12 @@ function startGenerateB() {
       _isGenerating = false;
       if (data.error) { showError('口コミ文の生成に失敗しました', data.error, startGenerateB); return; }
       _generatedText = data.text || '';
+      // 不適切入力チェック
+      if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
+        _isGenerating = false;
+        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null);
+        return;
+      }
       document.getElementById('resultText').value = _generatedText;
       showScreen('screen-result');
     })
@@ -1502,6 +1530,12 @@ function startGenerate() {
       }
       _isGenerating = false;
       _generatedText = data.text || '';
+      // 不適切入力チェック
+      if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
+        _isGenerating = false;
+        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null);
+        return;
+      }
       document.getElementById('resultText').value = _generatedText;
       showScreen('screen-result');
     })
