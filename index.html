@@ -582,11 +582,10 @@ body {
 <body>
 
 <div class="header" id="header">
-  <div class="school-name" id="schoolName">読み込み中...</div>
   <div class="header-logo" id="headerLogo">
     <div class="header-logo-text" id="logoText"></div>
   </div>
-  <div class="header-subtitle">Googleの口コミを書いてみましょう</div>
+  <div class="school-name" id="schoolName"></div>
 </div>
 
 <div class="container">
@@ -602,7 +601,7 @@ body {
   <!-- 画面R: 属性選択 -->
   <div class="screen" id="screen-role">
     <div class="role-section">
-      <h2>あなたはどちらですか？</h2>
+      <h2>あなたの立場を選んでください</h2>
 
       <div class="role-list">
         <button class="role-btn" onclick="selectRole('parent')">
@@ -613,8 +612,8 @@ body {
             </svg>
           </span>
           <span>
-            <span class="role-label">保護者として</span>
-            <span class="role-sub">お子さんが通っている・通っていた</span>
+            <span class="role-label">保護者の方</span>
+            <span class="role-sub">お子さまが通っている・通っていた</span>
           </span>
           <span class="role-arrow">›</span>
         </button>
@@ -626,7 +625,7 @@ body {
             </svg>
           </span>
           <span>
-            <span class="role-label">生徒として</span>
+            <span class="role-label">生徒の方</span>
             <span class="role-sub">自分が通っている・通っていた</span>
           </span>
           <span class="role-arrow">›</span>
@@ -639,7 +638,7 @@ body {
             </svg>
           </span>
           <span>
-            <span class="role-label">その他</span>
+            <span class="role-label">その他の方</span>
             <span class="role-sub">上記以外の立場から</span>
           </span>
           <span class="role-arrow">›</span>
@@ -829,9 +828,9 @@ function applyConfig(cfg) {
     document.documentElement.style.setProperty('--brand-light', 'rgba(' + _r + ',' + _g + ',' + _b + ',0.2)');
   })();
 
-  // 学校名
-  document.getElementById('schoolName').textContent = cfg.schoolName || '';
-
+  // 学校名（ヘッダー下・TOP画面）
+  var schoolNameEl = document.getElementById('schoolName');
+  if (schoolNameEl) schoolNameEl.textContent = cfg.schoolName || '';
   // ロゴ
   var logoDiv = document.getElementById('headerLogo');
   if (cfg.logoUrl) {
