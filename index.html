@@ -768,7 +768,7 @@ body {
     <div class="question-label" id="questionLabel"></div>
     <div id="choicesArea"></div>
     <button class="btn btn-primary" id="nextBtn" onclick="goNext()" style="display:none">次へ →</button>
-    <button class="btn btn-primary" id="generateBtn" onclick="startGenerate()" style="display:none">口コミ文を作る ✨</button>
+    <button class="btn btn-primary" id="generateBtn" onclick="startGenerate()" style="display:none">文章を整える</button>
     <button class="btn btn-ghost" id="skipBtn" onclick="startGenerate()" style="display:none">スキップして作る</button>
   </div>
 
@@ -782,12 +782,12 @@ body {
     </div>
     <div class="choice-list" id="choicesAreaB"></div>
     <div style="margin-top:20px;">
-      <div class="question-label" style="font-size:1rem;margin-bottom:4px;">気づいたことを自由に書いてください</div>
-      <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">箇条書きでも、単語だけでも、思ったままでOKです</div>
-      <textarea id="freeTextB" rows="8" class="free-text-area"
-        placeholder="例：&#10;・先生が名前を覚えてくれてた&#10;・テスト前に追加で補講してもらった&#10;・最初は嫌がってたけど今は自分から行く"></textarea>
+      <div class="question-label" style="font-size:1rem;margin-bottom:4px;">実際に感じたことを、ひとことだけ書いてください</div>
+      <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">きれいな文章でなくて大丈夫です。単語だけ・箇条書きでもOKです。</div>
+      <textarea id="freeTextB" rows="8" class="free-text-area" id="freeTextB"></textarea>
     </div>
-    <button class="btn btn-primary" id="generateBtnB" onclick="startGenerateB()" style="margin-top:16px;" disabled>口コミ文を作る ✨</button>
+    <div style="font-size:0.78rem;color:var(--text-sub);margin-top:10px;text-align:center;">入力内容をもとに、投稿しやすい文章に整えています</div>
+    <button class="btn btn-primary" id="generateBtnB" onclick="startGenerateB()" style="margin-top:12px;" disabled>文章を整える</button>
   </div>
 
   <!-- 画面3: AI生成中 -->
@@ -799,8 +799,8 @@ body {
         </svg>
       </div>
       <div class="spinner"></div>
-      <h2>口コミ文を作っています</h2>
-      <p>AIがあなたの回答をもとに<br>自然な文章を生成しています</p>
+      <h2>文章を整えています</h2>
+      <p>入力内容をもとに、投稿しやすい<br>文章に整えています</p>
     </div>
   </div>
 
@@ -825,7 +825,7 @@ body {
         </svg>
       </div>
       <h2>ありがとうございました！</h2>
-      <p>口コミのご協力に感謝します。<br>Googleのページに文章が貼り付けられたら、<br>星の数を選んで投稿してください。</p>
+      <p>口コミのご協力に感謝します。<br>Google口コミ画面で星の数を選び、<br>内容を確認して投稿してください。</p>
       <div class="steps-guide">
         <div class="guide-title">📋 Googleへの投稿手順</div>
         <div class="guide-step">
@@ -853,8 +853,8 @@ body {
           <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
         </svg>
       </div>
-      <h2 id="errorTitle">エラーが発生しました</h2>
-      <p id="errorMsg">もう一度お試しください。</p>
+      <h2 id="errorTitle">エラーが発生しました。<br>もう一度お試しください。</h2>
+      <p id="errorMsg"></p>
       <button class="btn btn-primary" id="errorRetryBtn" onclick="retryAction()">もう一度試す</button>
       <button class="btn btn-ghost" onclick="restart()">最初からやり直す</button>
     </div>
@@ -1054,7 +1054,7 @@ function initSurveyB() {
   // 設問ラベル（GASのquestionsから取得、なければデフォルト）
   var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
   var labelEl = document.getElementById('questionLabelB');
-  if (labelEl) labelEl.textContent = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
+  if (labelEl) labelEl.textContent = (q0 && q0.text) ? q0.text : '通ってみて、印象に残っていることを選んでください。';
 
   // 選択肢（GASのquestionsから取得、なければデフォルト）
   var brand = (_config && _config.brand) || 'kurofune';
@@ -1077,10 +1077,14 @@ function initSurveyB() {
     listEl.appendChild(btn);
   });
 
-  // 自由記述リセット
+  // 自由記述：roleに応じたプレースホルダーを設定
   var ftEl = document.getElementById('freeTextB');
   if (ftEl) {
     ftEl.value = '';
+    var isStudent = (_respondentRole === 'student');
+    ftEl.placeholder = isStudent
+      ? '例：\n・先生が話しやすい\n・わからないところを聞きやすい\n・前より勉強が嫌じゃなくなった'
+      : '例：\n・息子が先生おもしろいと言っている\n・家では聞かないけど、塾の先生の話は聞いている\n・プリントは多いけど、対策はしっかりしている';
     ftEl.oninput = function() { _bFreeText = ftEl.value; updateGenerateBtnB(); };
   }
   updateGenerateBtnB();
@@ -1112,7 +1116,7 @@ function startGenerateB() {
   showScreen('screen-loading');
 
   var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
-  var q0text = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
+  var q0text = (q0 && q0.text) ? q0.text : '通ってみて、印象に残っていることを選んでください。';
 
   var payload = {
     action: 'generateReview',
