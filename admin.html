@@ -814,6 +814,60 @@ body {
   min-height: 400px;
   max-height: 900px;
 }
+.pv-mode-btn {
+  flex: 1; padding: 7px 6px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: white; color: var(--text-muted); font-size: 11px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.12s; text-align: center;
+}
+.pv-mode-btn:hover { border-color: var(--blue); color: var(--blue); }
+.pv-mode-btn.pv-mode-active { background: var(--blue); color: white; border-color: var(--blue); }
+
+/* ギャラリーカード */
+.pv-card {
+  width: 240px; background: white; border-radius: 16px;
+  box-shadow: 0 3px 16px rgba(0,0,0,0.10); overflow: hidden;
+  border: 2px solid #e2e8f0; cursor: pointer; transition: transform 0.12s, box-shadow 0.12s;
+  flex-shrink: 0;
+}
+.pv-card:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.15); }
+.pv-card-label {
+  font-size: 10px; font-weight: 700; color: #64748b; text-align: center;
+  letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;
+}
+.pv-card-header { padding: 13px 14px 10px; text-align: center; }
+.pv-card-header .logo { font-size: 15px; font-weight: 800; letter-spacing: -0.02em; color: white; }
+.pv-card-header .school { font-size: 10px; opacity: 0.75; color: white; margin-top: 2px; }
+.pv-card-body { padding: 14px 12px 16px; }
+.pv-role-row { display:flex;align-items:center;gap:10px;padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:10px;margin-bottom:6px;background:white; }
+.pv-role-icon { width:32px;height:32px;border-radius:8px;background:#f4f6f9;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.pv-role-icon svg { width:16px;height:16px; }
+.pv-role-lbl { font-size:12px;font-weight:700;color:#1a2535;display:block; }
+.pv-role-sub { font-size:10px;color:#64748b;display:block; }
+.pv-step-ind { display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:14px; }
+.pv-s-dot { width:6px;height:6px;border-radius:50%;background:#e2e8f0; }
+.pv-s-dot.active { width:14px;border-radius:3px; }
+.pv-s-dot.done { opacity:0.35; }
+.pv-s-line { flex:1;max-width:16px;height:2px;background:#e2e8f0; }
+.pv-s-line.done { opacity:0.35; }
+.pv-q-count { font-size:10px;font-weight:600;letter-spacing:0.04em;color:#94a3b8;margin-bottom:6px; }
+.pv-q-label { font-size:13px;font-weight:700;color:#1a2535;margin-bottom:10px;line-height:1.5; }
+.pv-badge { display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;border-radius:20px;padding:3px 9px;margin-bottom:10px;border:1.5px solid; }
+.pv-choice { padding:9px 10px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:11px;color:#1a2535;margin-bottom:5px;display:flex;align-items:center;gap:7px;background:white; }
+.pv-choice.sel { font-weight:600; }
+.pv-check { width:14px;height:14px;border:1.5px solid #e2e8f0;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:white; }
+.pv-check.done { border-color:inherit; }
+.pv-free-ta { width:100%;min-height:56px;padding:8px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:11px;font-family:inherit;resize:none;background:white;color:#1a2535; }
+.pv-btn { display:flex;align-items:center;justify-content:center;width:100%;padding:11px;border-radius:10px;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;color:white;margin-top:10px; }
+.pv-complete-wrap { display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0; }
+.pv-complete-icon { width:56px;height:56px;background:#d1fae5;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:12px; }
+.pv-complete-icon svg { width:28px;height:28px;color:#059669; }
+.pv-err-wrap { display:flex;flex-direction:column;align-items:center;text-align:center;padding:20px 0; }
+.pv-err-icon { width:52px;height:52px;background:#fee2e2;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:12px; }
+.pv-err-icon svg { width:26px;height:26px;color:#dc2626; }
+.pv-ai-wrap { display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 0;gap:12px;text-align:center; }
+.pv-ai-icon { width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center; }
+.pv-ai-icon svg { width:26px;height:26px; }
+.pv-res-ta { width:100%;min-height:80px;padding:9px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:11px;font-family:inherit;resize:none;background:white;color:#1a2535;line-height:1.7;margin-bottom:10px; }
 
 /* ========== 区切り線 ========== */
 .section-divider {
@@ -1108,23 +1162,30 @@ body {
         </div>
         <div class="preview-ctrl-body">
           <label class="field-label" style="margin-bottom:6px;">表示する教室</label>
-          <select class="q-type-select" id="previewSchoolSelect" onchange="updatePreview()" style="width:100%;margin-bottom:16px;">
-            <option value="kurofune_kurihama">クロフネ 久里浜</option>
-            <option value="kurofune_kitakurihama">クロフネ 北久里浜</option>
-            <option value="ca_kurihama">CA 久里浜</option>
-            <option value="ca_kitakurihama">CA 北久里浜</option>
-          </select>
+          <select class="q-type-select" id="previewSchoolSelect" onchange="updatePreview()" style="width:100%;margin-bottom:12px;"></select>
+
+          <label class="field-label" style="margin-bottom:6px;">表示モード</label>
+          <div style="display:flex;gap:6px;margin-bottom:16px;">
+            <button id="pvModeInteractive" class="pv-mode-btn pv-mode-active" onclick="setPvMode('interactive')">操作して試す</button>
+            <button id="pvModeGallery" class="pv-mode-btn" onclick="setPvMode('gallery')">全画面を見る</button>
+          </div>
+
           <button class="btn-save" style="width:100%;" onclick="updatePreview()">🔄 再読み込み</button>
-          <p style="font-size:11px;color:var(--text-light);margin-top:12px;line-height:1.6;">設定変更後は再読み込みを押してください。実際のアンケート画面が表示されます。</p>
+          <p style="font-size:11px;color:var(--text-light);margin-top:12px;line-height:1.6;">設定変更後は再読み込みを押してください。</p>
         </div>
       </div>
-      <!-- 右：iframeプレビュー -->
+      <!-- 右：表示エリア -->
       <div class="preview-frame-area">
-        <div class="preview-device-bar">
-          <span style="font-size:11px;color:var(--text-muted);">📱 スマートフォン表示</span>
+        <div class="preview-device-bar" id="pvDeviceBar">
+          <span style="font-size:11px;color:var(--text-muted);">📱 操作して試す</span>
         </div>
-        <div class="preview-frame-wrap">
+        <!-- iframeモード -->
+        <div class="preview-frame-wrap" id="pvIframeWrap">
           <iframe id="previewFrame" src="" style="width:360px;border:none;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.15);background:#fff;display:block;"></iframe>
+        </div>
+        <!-- 全画面一覧モード -->
+        <div id="pvGalleryWrap" style="display:none;overflow-y:auto;flex:1;padding:20px 16px;">
+          <div id="pvGalleryGrid" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:flex-start;"></div>
         </div>
       </div>
     </div>
@@ -1290,6 +1351,7 @@ function loadAdminConfig() {
       renderDesign();
       renderCampaign();
       renderQR();
+      populateSchoolSelect();
     })
     .catch(function() {
       hideOverlay();
@@ -1300,17 +1362,105 @@ function loadAdminConfig() {
 // ============================================================
 // タブ切り替え
 // ============================================================
-function updatePreview() {
-  var schoolSel = document.getElementById('previewSchoolSelect');
-  if (!schoolSel) return;
-  var school = schoolSel.value;
+// ============================================================
+// プレビュー
+// ============================================================
+var _pvMode = 'interactive'; // 'interactive' | 'gallery'
+
+function setPvMode(mode) {
+  _pvMode = mode;
+  document.getElementById('pvModeInteractive').classList.toggle('pv-mode-active', mode === 'interactive');
+  document.getElementById('pvModeGallery').classList.toggle('pv-mode-active', mode === 'gallery');
+  var iframeWrap = document.getElementById('pvIframeWrap');
+  var galleryWrap = document.getElementById('pvGalleryWrap');
+  var bar = document.getElementById('pvDeviceBar');
+  if (mode === 'interactive') {
+    iframeWrap.style.display = '';
+    galleryWrap.style.display = 'none';
+    bar.innerHTML = '<span style="font-size:11px;color:var(--text-muted);">📱 操作して試す</span>';
+    loadIframePreview();
+  } else {
+    iframeWrap.style.display = 'none';
+    galleryWrap.style.display = 'flex';
+    bar.innerHTML = '<span style="font-size:11px;color:var(--text-muted);">🗂 全画面を見る</span>';
+    renderGallery();
+  }
+}
+
+function getSelectedSchoolInfo() {
+  var sel = document.getElementById('previewSchoolSelect');
+  if (!sel || !sel.value) return { tenant: TENANT, school: '', schoolName: '', brand: 'kurofune' };
+  var val = sel.value; // 例: "kurofune_kurihama"
+  var parts = val.split('_');
+  var brand = parts[0];
+  // schoolName は _adminData.schools から取る
+  var schools = (_adminData && _adminData.schools) ? _adminData.schools : {};
+  var school = '';
+  var schoolName = '';
+  Object.keys(schools).forEach(function(k) {
+    var s = schools[k];
+    if (s && s.brand === brand) {
+      // val と一致するか school キーで判断
+      if (val === brand + '_' + k || k === val) {
+        school = k; schoolName = s.schoolName || k;
+      }
+    }
+  });
+  // fallback: valをそのままschoolに
+  if (!school) { school = val; }
+  return { tenant: TENANT, school: school, schoolName: schoolName, brand: brand };
+}
+
+function getBrandInfo(brand) {
+  var design = (_adminData && _adminData.design && _adminData.design[brand]) ? _adminData.design[brand] : {};
+  var brandNames = (_adminData && _adminData.brandNames) ? _adminData.brandNames : {};
+  return {
+    brandName: brandNames[brand] || design.brandName || (brand === 'kurofune' ? '進学塾クロフネ' : 'コードアドベンチャー'),
+    brandColor: design.brandColor || (brand === 'kurofune' ? '#1A56DB' : '#E3A008')
+  };
+}
+
+function getBrandQuestions(brand) {
+  var qs = (_adminData && _adminData.questions && _adminData.questions[brand]) ? _adminData.questions[brand] : [];
+  return qs;
+}
+
+function loadIframePreview() {
+  var info = getSelectedSchoolInfo();
   var frame = document.getElementById('previewFrame');
   if (!frame) return;
-  // iframeを一旦空にしてから再セット（キャッシュ回避）
   frame.src = 'about:blank';
   setTimeout(function() {
-    frame.src = './index.html?tenant=' + TENANT + '&school=' + school;
+    frame.src = './index.html?tenant=' + TENANT + '&school=' + info.school;
   }, 50);
+}
+
+function updatePreview() {
+  if (_pvMode === 'interactive') {
+    loadIframePreview();
+  } else {
+    renderGallery();
+  }
+}
+
+function populateSchoolSelect() {
+  var sel = document.getElementById('previewSchoolSelect');
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (!_adminData || !_adminData.schools) return;
+  var schools = _adminData.schools;
+  Object.keys(schools).forEach(function(k) {
+    var s = schools[k];
+    var brand = (s && s.brand) ? s.brand : 'kurofune';
+    var sName = (s && s.schoolName) ? s.schoolName : k;
+    var bInfo = getBrandInfo(brand);
+    var opt = document.createElement('option');
+    opt.value = brand + '_' + k;
+    opt.textContent = bInfo.brandName + ' ' + sName;
+    opt.dataset.school = k;
+    opt.dataset.brand = brand;
+    sel.appendChild(opt);
+  });
 }
 
 function resizePreviewFrame() {
@@ -1323,13 +1473,202 @@ function resizePreviewFrame() {
   frame.style.height = h + 'px';
 }
 
+// ============================================================
+// ギャラリー描画
+// ============================================================
+function escG(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderGallery() {
+  var sel = document.getElementById('previewSchoolSelect');
+  var brand = 'kurofune';
+  var schoolName = '';
+  if (sel && sel.options[sel.selectedIndex]) {
+    brand = sel.options[sel.selectedIndex].dataset.brand || 'kurofune';
+    var school = sel.options[sel.selectedIndex].dataset.school || '';
+    var schools = (_adminData && _adminData.schools) ? _adminData.schools : {};
+    var si = schools[school];
+    schoolName = (si && si.schoolName) ? si.schoolName : school;
+  }
+  var bInfo = getBrandInfo(brand);
+  var qs = getBrandQuestions(brand);
+  var color = bInfo.brandColor;
+  var colorLight = color + '18';
+  var grid = document.getElementById('pvGalleryGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  var screens = [
+    { label: '立場選択（TOP）', html: buildRoleScreen(bInfo, schoolName, color) },
+    { label: 'Q1 〜 Q' + qs.length + '（設問）', html: buildQScreens(bInfo, schoolName, color, qs) },
+    { label: 'AI生成中', html: buildLoadingScreen(bInfo, schoolName, color) },
+    { label: '生成結果', html: buildResultScreen(bInfo, schoolName, color) },
+    { label: '完了', html: buildCompleteScreen(bInfo, schoolName, color) },
+    { label: 'エラー', html: buildErrorScreen(bInfo, schoolName, color) }
+  ];
+
+  // Q1〜Qnは設問ごとに展開
+  var expanded = [];
+  screens.forEach(function(s) {
+    if (s.label.indexOf('Q1') === 0 && Array.isArray(s.html)) {
+      s.html.forEach(function(item) { expanded.push(item); });
+    } else if (!Array.isArray(s.html)) {
+      expanded.push({ label: s.label, html: s.html });
+    }
+  });
+
+  expanded.forEach(function(item) {
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;gap:6px;';
+    var lbl = document.createElement('div');
+    lbl.className = 'pv-card-label';
+    lbl.textContent = item.label;
+    var card = document.createElement('div');
+    card.className = 'pv-card';
+    card.innerHTML = item.html;
+    wrap.appendChild(lbl);
+    wrap.appendChild(card);
+    grid.appendChild(wrap);
+  });
+}
+
+function pvHeader(bInfo, schoolName, color) {
+  return '<div class="pv-card-header" style="background:' + escG(color) + ';">' +
+    '<div class="logo">' + escG(bInfo.brandName) + '</div>' +
+    '<div class="school">' + escG(schoolName) + '</div>' +
+    '</div>';
+}
+
+function buildRoleScreen(bInfo, schoolName, color) {
+  var icons = [
+    '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.8" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.8" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    '<svg viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.8" width="16" height="16" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>'
+  ];
+  var roles = [
+    { lbl: '保護者の方', sub: 'お子さまが通っている・通っていた', icon: icons[0] },
+    { lbl: '生徒の方',   sub: '自分が通っている・通っていた',     icon: icons[1] },
+    { lbl: 'その他の方', sub: '上記以外の立場から',               icon: icons[2] }
+  ];
+  var rowsHtml = roles.map(function(r) {
+    return '<div class="pv-role-row">' +
+      '<div class="pv-role-icon">' + r.icon + '</div>' +
+      '<span><span class="pv-role-lbl">' + escG(r.lbl) + '</span><span class="pv-role-sub">' + escG(r.sub) + '</span></span>' +
+      '<span style="margin-left:auto;color:#94a3b8;font-size:14px;">›</span>' +
+      '</div>';
+  }).join('');
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body">' +
+    '<div style="font-size:15px;font-weight:800;color:#1a2535;margin-bottom:14px;letter-spacing:-0.02em;">あなたの立場を<br>選んでください</div>' +
+    rowsHtml + '</div>';
+}
+
+function buildQScreens(bInfo, schoolName, color, qs) {
+  var total = qs.length;
+  if (total === 0) {
+    return [{ label: '設問なし', html: pvHeader(bInfo, schoolName, color) + '<div class="pv-card-body" style="color:#94a3b8;font-size:12px;">設問が設定されていません</div>' }];
+  }
+  return qs.map(function(q, idx) {
+    var stepHtml = '';
+    for (var i = 0; i < total; i++) {
+      if (i > 0) stepHtml += '<div class="pv-s-line' + (i <= idx ? ' done' : '') + '" style="' + (i <= idx ? 'background:' + color + ';' : '') + '"></div>';
+      var cls = i < idx ? 'done' : (i === idx ? 'active' : '');
+      stepHtml += '<div class="pv-s-dot ' + cls + '" style="' + (cls !== '' ? 'background:' + color + ';' : '') + '"></div>';
+    }
+    var bodyHtml = '<div class="pv-step-ind">' + stepHtml + '</div>' +
+      '<div class="pv-q-count">' + (idx + 1) + ' / ' + total + '</div>' +
+      '<div class="pv-q-label">' + escG(q.text || '') + '</div>';
+    if (q.type === 'free') {
+      bodyHtml += '<textarea class="pv-free-ta" placeholder="' + escG(q.placeholder || 'ご自由にどうぞ') + '" readonly></textarea>' +
+        '<div style="font-size:10px;color:#94a3b8;margin-bottom:10px;">※ 書かなくても口コミ文は作れます</div>' +
+        '<div class="pv-btn" style="background:' + escG(color) + ';">口コミ文を作る ✨</div>';
+    } else {
+      var choices = [];
+      if (q.roleCondition && q.choicesByRole) {
+        var allChoices = [];
+        ['parent','student','other'].forEach(function(role) {
+          if (q.choicesByRole[role]) {
+            q.choicesByRole[role].forEach(function(c) {
+              if (allChoices.indexOf(c) < 0) allChoices.push(c);
+            });
+          }
+        });
+        choices = allChoices.slice(0, 4);
+      } else {
+        choices = (q.choices || []).slice(0, 4);
+      }
+      var badge = '<div class="pv-badge" style="color:' + escG(color) + ';border-color:' + escG(color) + ';background:' + escG(color) + '18;">✓ 複数選べます</div>';
+      var choicesHtml = choices.map(function(c, ci) {
+        var sel = ci === 0;
+        return '<div class="pv-choice' + (sel ? ' sel' : '') + '" style="' + (sel ? 'border-color:' + color + ';background:' + color + '18;color:#1341a8;' : '') + '">' +
+          '<div class="pv-check' + (sel ? ' done' : '') + '" style="' + (sel ? 'background:' + color + ';border-color:' + color + ';' : '') + '">' +
+          (sel ? '<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' : '') +
+          '</div>' + escG(c) + '</div>';
+      }).join('');
+      var btnLabel = idx < total - 1 ? '次へ →' : '口コミ文を作る ✨';
+      bodyHtml += badge + '<div style="margin-bottom:8px;">' + choicesHtml + '</div>' +
+        '<div class="pv-btn" style="background:' + escG(color) + ';">' + btnLabel + '</div>';
+    }
+    return { label: 'Q' + (idx + 1) + '：' + (q.text || '').slice(0, 16) + (q.text && q.text.length > 16 ? '…' : ''),
+      html: pvHeader(bInfo, schoolName, color) + '<div class="pv-card-body">' + bodyHtml + '</div>' };
+  });
+}
+
+function buildLoadingScreen(bInfo, schoolName, color) {
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body"><div class="pv-ai-wrap">' +
+    '<div class="pv-ai-icon" style="background:' + escG(color) + '18;">' +
+    '<svg viewBox="0 0 24 24" fill="none" stroke="' + escG(color) + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/></svg>' +
+    '</div>' +
+    '<div style="width:28px;height:28px;border:2.5px solid ' + escG(color) + '33;border-top:2.5px solid ' + escG(color) + ';border-radius:50%;animation:spin 0.8s linear infinite;"></div>' +
+    '<div style="font-size:14px;font-weight:700;color:#1a2535;">口コミ文を作っています</div>' +
+    '<div style="font-size:11px;color:#64748b;line-height:1.6;">AIが回答をもとに<br>文章を生成しています</div>' +
+    '</div></div>';
+}
+
+function buildResultScreen(bInfo, schoolName, color) {
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body">' +
+    '<div style="font-size:13px;font-weight:700;color:#1a2535;margin-bottom:4px;display:flex;align-items:center;gap:5px;">' +
+    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' +
+    '口コミ文ができました</div>' +
+    '<div style="font-size:10px;color:#64748b;margin-bottom:10px;">内容を確認して、修正があれば直接編集できます。</div>' +
+    '<textarea class="pv-res-ta" readonly>子供が通い始めてから勉強への姿勢が変わりました。先生がとても丁寧に指導してくださり、テストの点数も着実に上がっています。質問しやすい雰囲気があり…</textarea>' +
+    '<div class="pv-btn" style="background:' + escG(color) + ';">完成！Googleに投稿する →</div>' +
+    '</div>';
+}
+
+function buildCompleteScreen(bInfo, schoolName, color) {
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body"><div class="pv-complete-wrap">' +
+    '<div class="pv-complete-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+    '<div style="font-size:16px;font-weight:800;color:#1a2535;margin-bottom:8px;letter-spacing:-0.02em;">ありがとうございました！</div>' +
+    '<div style="font-size:11px;color:#64748b;line-height:1.7;">口コミのご協力に感謝します。<br>星の数を選んで投稿してください。</div>' +
+    '</div></div>';
+}
+
+function buildErrorScreen(bInfo, schoolName, color) {
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body"><div class="pv-err-wrap">' +
+    '<div class="pv-err-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>' +
+    '<div style="font-size:14px;font-weight:700;color:#1a2535;margin-bottom:6px;">エラーが発生しました</div>' +
+    '<div style="font-size:11px;color:#64748b;margin-bottom:16px;">もう一度お試しください。</div>' +
+    '</div></div>';
+}
+
 function switchTab(id, btn) {
   document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
   document.querySelectorAll('.nav-item').forEach(function(b) { b.classList.remove('active'); });
   document.getElementById(id).classList.add('active');
   if (btn) btn.classList.add('active');
-  // プレビュータブを開いたら自動ロード
-  if (id === 'tab-preview') { updatePreview(); setTimeout(resizePreviewFrame, 80); }
+  if (id === 'tab-preview') {
+    populateSchoolSelect();
+    if (_pvMode === 'interactive') {
+      loadIframePreview();
+      setTimeout(resizePreviewFrame, 80);
+    } else {
+      renderGallery();
+    }
+  }
 }
 
 function openLog() {
