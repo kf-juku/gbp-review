@@ -992,8 +992,12 @@ body {
 
         <div class="brand-section-title">進学塾クロフネ</div>
         <div class="field-row">
+          <label>ブランド名（ヘッダー上段に表示）</label>
+          <input type="text" class="form-input" id="brandNameKurofune" placeholder="例：進学塾クロフネ">
+        </div>
+        <div class="field-row">
           <label>ロゴ画像URL</label>
-          <input type="url" class="form-input" id="logoKurofune" placeholder="https://...（未設定の場合は教室名テキストを表示）">
+          <input type="url" class="form-input" id="logoKurofune" placeholder="https://...（未設定の場合はブランド名テキストを表示）">
         </div>
         <div class="field-row">
           <label>ブランドカラー</label>
@@ -1007,8 +1011,12 @@ body {
 
         <div class="brand-section-title">コードアドベンチャー</div>
         <div class="field-row">
+          <label>ブランド名（ヘッダー上段に表示）</label>
+          <input type="text" class="form-input" id="brandNameCa" placeholder="例：コードアドベンチャー">
+        </div>
+        <div class="field-row">
           <label>ロゴ画像URL</label>
-          <input type="url" class="form-input" id="logoCa" placeholder="https://...（未設定の場合は教室名テキストを表示）">
+          <input type="url" class="form-input" id="logoCa" placeholder="https://...（未設定の場合はブランド名テキストを表示）">
         </div>
         <div class="field-row">
           <label>ブランドカラー</label>
@@ -1342,7 +1350,8 @@ function renderSchoolFields() {
   var wrap = document.getElementById('schoolFields');
   wrap.innerHTML = '';
   SCHOOLS.forEach(function(s) {
-    var gbpUrl = (_adminData.schools && _adminData.schools[s.school]) ? _adminData.schools[s.school] : '';
+    var schoolData = (_adminData.schools && _adminData.schools[s.school]) ? _adminData.schools[s.school] : {};
+    var gbpUrl = (typeof schoolData === 'string') ? schoolData : (schoolData.gbpUrl || '');
     var div = document.createElement('div');
     div.className = 'field-row';
     div.innerHTML = '<label>' + s.label + '</label>' +
@@ -1354,7 +1363,13 @@ function renderSchoolFields() {
 function saveSchools() {
   var schools = {};
   SCHOOLS.forEach(function(s) {
-    schools[s.school] = document.getElementById('gbp_' + s.school).value.trim();
+    var existing = (_adminData.schools && _adminData.schools[s.school]) || {};
+    var brand = (typeof existing === 'string') ? s.brand : (existing.brand || s.brand || '');
+    schools[s.school] = {
+      gbpUrl:     document.getElementById('gbp_' + s.school).value.trim(),
+      schoolName: s.label,
+      brand:      brand
+    };
   });
   postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'schools', data: schools });
 }
@@ -1741,6 +1756,9 @@ function resetPrompt() {
 // ============================================================
 function renderDesign() {
   var design = _adminData.design || {};
+  var brandNames = _adminData.brandNames || {};
+  document.getElementById('brandNameKurofune').value = brandNames.kurofune || (design.kurofune && design.kurofune.brandName) || '';
+  document.getElementById('brandNameCa').value = brandNames.ca || (design.ca && design.ca.brandName) || '';
   document.getElementById('logoKurofune').value = (design.kurofune && design.kurofune.logoUrl) || '';
   document.getElementById('logoCa').value = (design.ca && design.ca.logoUrl) || '';
   var colorK = (design.kurofune && design.kurofune.brandColor) || '#1A56DB';
@@ -1766,11 +1784,13 @@ function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 function saveDesign() {
   var data = {
     kurofune: {
-      logoUrl: document.getElementById('logoKurofune').value.trim(),
+      brandName:  document.getElementById('brandNameKurofune').value.trim(),
+      logoUrl:    document.getElementById('logoKurofune').value.trim(),
       brandColor: document.getElementById('colorKurofuneHex').value
     },
     ca: {
-      logoUrl: document.getElementById('logoCa').value.trim(),
+      brandName:  document.getElementById('brandNameCa').value.trim(),
+      logoUrl:    document.getElementById('logoCa').value.trim(),
       brandColor: document.getElementById('colorCaHex').value
     }
   };

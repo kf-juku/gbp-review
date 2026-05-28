@@ -38,6 +38,13 @@ body {
   padding: 18px 20px 14px;
   text-align: center;
 }
+.header .brand-name {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-bottom: 2px;
+  letter-spacing: 0.02em;
+}
 .header .school-name {
   font-size: 12px;
   opacity: 0.75;
@@ -585,6 +592,7 @@ body {
   <div class="header-logo" id="headerLogo">
     <div class="header-logo-text" id="logoText"></div>
   </div>
+  <div class="brand-name" id="brandName"></div>
   <div class="school-name" id="schoolName"></div>
 </div>
 
@@ -828,15 +836,17 @@ function applyConfig(cfg) {
     document.documentElement.style.setProperty('--brand-light', 'rgba(' + _r + ',' + _g + ',' + _b + ',0.2)');
   })();
 
-  // 学校名（ヘッダー下・TOP画面）
+  // ブランド名・学校名
+  var brandNameEl = document.getElementById('brandName');
+  if (brandNameEl) brandNameEl.textContent = cfg.brandName || '';
   var schoolNameEl = document.getElementById('schoolName');
   if (schoolNameEl) schoolNameEl.textContent = cfg.schoolName || '';
   // ロゴ
   var logoDiv = document.getElementById('headerLogo');
   if (cfg.logoUrl) {
-    logoDiv.innerHTML = '<img src="' + cfg.logoUrl + '" alt="' + (cfg.schoolName || '') + '">';
+    logoDiv.innerHTML = '<img src="' + cfg.logoUrl + '" alt="' + (cfg.brandName || cfg.schoolName || '') + '">';
   } else {
-    logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + (cfg.schoolName || '') + '</div>';
+    logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + (cfg.brandName || cfg.schoolName || '') + '</div>';
   }
 
   // 設問
