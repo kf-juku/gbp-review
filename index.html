@@ -919,7 +919,18 @@ function renderStep() {
     startGenerate();
     return;
   }
-  var q = _questions[_currentStep];
+  var qRaw = _questions[_currentStep];
+  // 立場別出し分け: roleCondition=true かつ choicesByRole がある場合はロール別選択肢を使う
+  var q = Object.assign({}, qRaw);
+  if (qRaw.roleCondition && qRaw.choicesByRole && _respondentRole) {
+    var roleKey = _respondentRole === 'parent' ? 'parent'
+                : _respondentRole === 'student' ? 'student'
+                : 'other';
+    var roleChoices = qRaw.choicesByRole[roleKey];
+    if (roleChoices && roleChoices.length > 0) {
+      q = Object.assign({}, qRaw, { choices: roleChoices });
+    }
+  }
   var total = _questions.length;
 
   // ステップインジケーター

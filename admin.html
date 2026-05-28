@@ -722,6 +722,47 @@ body {
 }
 
 /* ========== プレビューレイアウト ========== */
+/* ========== roleConditionトグル ========== */
+.role-toggle-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; margin: 6px 0;
+  background: var(--surface); border-radius: 8px;
+  border: 1.5px solid var(--border);
+}
+.role-toggle-label {
+  font-size: 12px; font-weight: 600; color: var(--text-muted); flex: 1;
+}
+.toggle-switch {
+  position: relative; width: 40px; height: 22px; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+  background: #cbd5e1; border-radius: 22px; transition: background 0.2s;
+}
+.toggle-slider:before {
+  position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px;
+  background: white; border-radius: 50%; transition: transform 0.2s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--blue); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+.role-tabs {
+  display: flex; gap: 4px; margin: 8px 0 4px;
+  border-bottom: 2px solid var(--border);
+}
+.role-tab-btn {
+  padding: 5px 14px; font-size: 12px; font-weight: 600;
+  border: none; background: none; cursor: pointer; font-family: inherit;
+  color: var(--text-muted); border-radius: 6px 6px 0 0;
+  border-bottom: 2px solid transparent; margin-bottom: -2px;
+}
+.role-tab-btn.active {
+  color: var(--blue); border-bottom-color: var(--blue); background: var(--blue-light);
+}
+.role-choices-panel { display: none; }
+.role-choices-panel.active { display: block; }
+
 .preview-layout {
   display: flex;
   height: calc(100vh - 57px); /* topbarの高さ分を引く */
@@ -1397,22 +1438,86 @@ function renderQuestionEditor() {
     textInput.id = 'qtext_' + qi;
     block.appendChild(textInput);
 
-    // 選択肢エリア（single/multi）
+    // --- roleConditionトグル ---
+    var toggleRow = document.createElement('div');
+    toggleRow.className = 'role-toggle-row';
+    var toggleLabel = document.createElement('span');
+    toggleLabel.className = 'role-toggle-label';
+    toggleLabel.textContent = '立場（保護者/生徒/その他）で選択肢を出し分ける';
+    var toggleSwitch = document.createElement('label');
+    toggleSwitch.className = 'toggle-switch';
+    var toggleInput = document.createElement('input');
+    toggleInput.type = 'checkbox';
+    toggleInput.id = 'roleToggle_' + qi;
+    toggleInput.checked = !!q.roleCondition;
+    var toggleSlider = document.createElement('span');
+    toggleSlider.className = 'toggle-slider';
+    toggleSwitch.appendChild(toggleInput);
+    toggleSwitch.appendChild(toggleSlider);
+    toggleRow.appendChild(toggleLabel);
+    toggleRow.appendChild(toggleSwitch);
+    block.appendChild(toggleRow);
+    toggleInput.onchange = (function(qIdx){ return function(){ onRoleToggleChange(qIdx); }; })(qi);
+
+    // --- 選択肢エリア（roleCondition OFF / free 時の通常選択肢） ---
+    var normalChoicesArea = document.createElement('div');
+    normalChoicesArea.id = 'normalchoices_' + qi;
+    normalChoicesArea.style.display = (q.type === 'free' || q.roleCondition) ? 'none' : 'block';
+
     var choicesWrap = document.createElement('div');
     choicesWrap.id = 'choices_' + qi;
-    choicesWrap.style.display = (q.type === 'free') ? 'none' : 'block';
     (q.choices || []).forEach(function(c, ci) {
-      choicesWrap.appendChild(makeChoiceRow(qi, ci, c));
+      choicesWrap.appendChild(makeChoiceRow(qi, 'normal', ci, c));
     });
-    block.appendChild(choicesWrap);
+    normalChoicesArea.appendChild(choicesWrap);
 
     var addBtn = document.createElement('button');
     addBtn.className = 'btn-add';
     addBtn.id = 'addchoice_' + qi;
     addBtn.textContent = '+ 選択肢を追加';
-    addBtn.style.display = (q.type === 'free') ? 'none' : 'inline-block';
-    addBtn.onclick = (function(qIdx){ return function(){ addChoice(qIdx); }; })(qi);
-    block.appendChild(addBtn);
+    addBtn.onclick = (function(qIdx){ return function(){ addChoice(qIdx, 'normal'); }; })(qi);
+    normalChoicesArea.appendChild(addBtn);
+    block.appendChild(normalChoicesArea);
+
+    // --- roleCondition ON 時の3タブ選択肢エリア ---
+    var roleChoicesArea = document.createElement('div');
+    roleChoicesArea.id = 'rolechoices_' + qi;
+    roleChoicesArea.style.display = (q.type === 'free' || !q.roleCondition) ? 'none' : 'block';
+
+    var roleTabs = document.createElement('div');
+    roleTabs.className = 'role-tabs';
+    var roleTabDefs = [['parent','保護者'],['student','生徒'],['other','その他']];
+    roleTabDefs.forEach(function(rt, ri) {
+      var tb = document.createElement('button');
+      tb.className = 'role-tab-btn' + (ri === 0 ? ' active' : '');
+      tb.textContent = rt[1];
+      tb.id = 'roletab_' + qi + '_' + rt[0];
+      tb.onclick = (function(qIdx, role){ return function(){ switchRoleTab(qIdx, role); }; })(qi, rt[0]);
+      roleTabs.appendChild(tb);
+    });
+    roleChoicesArea.appendChild(roleTabs);
+
+    var cbr = q.choicesByRole || { parent: [], student: [], other: [] };
+    roleTabDefs.forEach(function(rt, ri) {
+      var panel = document.createElement('div');
+      panel.className = 'role-choices-panel' + (ri === 0 ? ' active' : '');
+      panel.id = 'rolepanel_' + qi + '_' + rt[0];
+
+      var panelWrap = document.createElement('div');
+      panelWrap.id = 'choices_' + qi + '_' + rt[0];
+      (cbr[rt[0]] || []).forEach(function(c, ci) {
+        panelWrap.appendChild(makeChoiceRow(qi, rt[0], ci, c));
+      });
+      panel.appendChild(panelWrap);
+
+      var addRoleBtn = document.createElement('button');
+      addRoleBtn.className = 'btn-add';
+      addRoleBtn.textContent = '+ 選択肢を追加';
+      (function(qIdx, role){ addRoleBtn.onclick = function(){ addChoice(qIdx, role); }; })(qi, rt[0]);
+      panel.appendChild(addRoleBtn);
+      roleChoicesArea.appendChild(panel);
+    });
+    block.appendChild(roleChoicesArea);
 
     wrap.appendChild(block);
   });
@@ -1428,10 +1533,32 @@ function renderQuestionEditor() {
 function onTypeChange(qi) {
   var sel = document.getElementById('qtype_' + qi);
   var isFree = sel.value === 'free';
-  var choicesWrap = document.getElementById('choices_' + qi);
-  var addBtn = document.getElementById('addchoice_' + qi);
-  if (choicesWrap) choicesWrap.style.display = isFree ? 'none' : 'block';
-  if (addBtn) addBtn.style.display = isFree ? 'none' : 'inline-block';
+  var toggleEl = document.getElementById('roleToggle_' + qi);
+  var isRoleOn = toggleEl ? toggleEl.checked : false;
+  var normalArea = document.getElementById('normalchoices_' + qi);
+  var roleArea = document.getElementById('rolechoices_' + qi);
+  if (normalArea) normalArea.style.display = (!isFree && !isRoleOn) ? 'block' : 'none';
+  if (roleArea) roleArea.style.display = (!isFree && isRoleOn) ? 'block' : 'none';
+}
+
+function onRoleToggleChange(qi) {
+  var toggleEl = document.getElementById('roleToggle_' + qi);
+  var isRoleOn = toggleEl ? toggleEl.checked : false;
+  var sel = document.getElementById('qtype_' + qi);
+  var isFree = sel ? sel.value === 'free' : false;
+  var normalArea = document.getElementById('normalchoices_' + qi);
+  var roleArea = document.getElementById('rolechoices_' + qi);
+  if (normalArea) normalArea.style.display = (!isFree && !isRoleOn) ? 'block' : 'none';
+  if (roleArea) roleArea.style.display = (!isFree && isRoleOn) ? 'block' : 'none';
+}
+
+function switchRoleTab(qi, role) {
+  ['parent', 'student', 'other'].forEach(function(r) {
+    var tab = document.getElementById('roletab_' + qi + '_' + r);
+    var panel = document.getElementById('rolepanel_' + qi + '_' + r);
+    if (tab) tab.classList.toggle('active', r === role);
+    if (panel) panel.classList.toggle('active', r === role);
+  });
 }
 
 function moveQuestion(qi, dir) {
@@ -1457,7 +1584,7 @@ function deleteQuestion(qi) {
 
 function addQuestion() {
   var qs = collectCurrentQuestions();
-  qs.push({ type: 'single', text: '', choices: [''] });
+  qs.push({ type: 'single', text: '', choices: [''], roleCondition: false, choicesByRole: { parent: [], student: [], other: [] } });
   if (!_adminData.questions) _adminData.questions = {};
   _adminData.questions[_editBrand] = qs;
   renderQuestionEditor();
@@ -1470,54 +1597,81 @@ function collectCurrentQuestions() {
     var type = typeEl ? typeEl.value : q.type;
     var textEl = document.getElementById('qtext_' + qi);
     var text = textEl ? textEl.value : q.text;
+    var toggleEl = document.getElementById('roleToggle_' + qi);
+    var roleCondition = toggleEl ? toggleEl.checked : !!q.roleCondition;
+
+    // 通常選択肢（roleCondition OFF または free）
     var choices = [];
     if (type !== 'free') {
-      var wrap = document.getElementById('choices_' + qi);
-      if (wrap) {
-        Array.from(wrap.querySelectorAll('.choice-input')).forEach(function(inp) {
+      var normalWrap = document.getElementById('choices_' + qi);
+      if (normalWrap) {
+        Array.from(normalWrap.querySelectorAll('.choice-input')).forEach(function(inp) {
           if (inp.value.trim()) choices.push(inp.value.trim());
         });
       }
     }
-    return { type: type, text: text, choices: choices };
+
+    // ロール別選択肢（roleCondition ON のとき）
+    var choicesByRole = { parent: [], student: [], other: [] };
+    if (type !== 'free' && roleCondition) {
+      ['parent', 'student', 'other'].forEach(function(role) {
+        var wrap = document.getElementById('choices_' + qi + '_' + role);
+        if (wrap) {
+          Array.from(wrap.querySelectorAll('.choice-input')).forEach(function(inp) {
+            if (inp.value.trim()) choicesByRole[role].push(inp.value.trim());
+          });
+        }
+      });
+    } else {
+      choicesByRole = (q.choicesByRole) ? q.choicesByRole : { parent: [], student: [], other: [] };
+    }
+
+    return { type: type, text: text, choices: choices, roleCondition: roleCondition, choicesByRole: choicesByRole };
   });
 }
 
-function makeChoiceRow(qi, ci, val) {
+function makeChoiceRow(qi, role, ci, val) {
+  // role: 'normal' | 'parent' | 'student' | 'other'
+  var rowId = 'choicerow_' + qi + '_' + role + '_' + ci;
   var row = document.createElement('div');
   row.className = 'choice-row';
-  row.id = 'choicerow_' + qi + '_' + ci;
+  row.id = rowId;
   var inp = document.createElement('input');
   inp.className = 'choice-input';
   inp.value = val;
   inp.placeholder = '選択肢';
-  inp.id = 'choice_' + qi + '_' + ci;
+  inp.id = 'choice_' + qi + '_' + role + '_' + ci;
   var btn = document.createElement('button');
   btn.className = 'btn-remove';
   btn.textContent = '削除';
-  (function(q, c) { btn.onclick = function() { removeChoice(q, c); }; })(qi, ci);
+  (function(q, r, c) { btn.onclick = function() { removeChoice(q, r, c); }; })(qi, role, ci);
   row.appendChild(inp);
   row.appendChild(btn);
   return row;
 }
 
-function addChoice(qi) {
-  var wrap = document.getElementById('choices_' + qi);
+function addChoice(qi, role) {
+  var wrapId = (role === 'normal') ? 'choices_' + qi : 'choices_' + qi + '_' + role;
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
   var ci = wrap.children.length;
-  wrap.appendChild(makeChoiceRow(qi, ci, ''));
+  wrap.appendChild(makeChoiceRow(qi, role, ci, ''));
 }
 
-function removeChoice(qi, ci) {
-  var el = document.getElementById('choicerow_' + qi + '_' + ci);
+function removeChoice(qi, role, ci) {
+  var rowId = 'choicerow_' + qi + '_' + role + '_' + ci;
+  var el = document.getElementById(rowId);
   if (el) el.remove();
   // ci を振り直す
-  var wrap = document.getElementById('choices_' + qi);
+  var wrapId = (role === 'normal') ? 'choices_' + qi : 'choices_' + qi + '_' + role;
+  var wrap = document.getElementById(wrapId);
+  if (!wrap) return;
   Array.from(wrap.children).forEach(function(row, newCi) {
-    row.id = 'choicerow_' + qi + '_' + newCi;
+    row.id = 'choicerow_' + qi + '_' + role + '_' + newCi;
     var inp = row.querySelector('.choice-input');
-    if (inp) inp.id = 'choice_' + qi + '_' + newCi;
+    if (inp) inp.id = 'choice_' + qi + '_' + role + '_' + newCi;
     var btn = row.querySelector('.btn-remove');
-    if (btn) (function(q, c) { btn.onclick = function() { removeChoice(q, c); }; })(qi, newCi);
+    if (btn) (function(q, r, c) { btn.onclick = function() { removeChoice(q, r, c); }; })(qi, role, newCi);
   });
 }
 
