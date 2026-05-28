@@ -858,6 +858,20 @@ body {
   </div>
 
   <!-- 画面5: 完了 -->
+  <!-- コピー確認モーダル -->
+  <div id="copyModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;">
+    <div id="copyModalBox" style="background:#fff;border-radius:20px;padding:32px 28px;max-width:320px;width:88%;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,0.18);transform:scale(0.92);opacity:0;transition:transform 0.22s cubic-bezier(.34,1.56,.64,1),opacity 0.18s ease;">
+      <div style="width:56px;height:56px;background:#d1fae5;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div style="font-size:17px;font-weight:800;color:#1a2535;margin-bottom:8px;">文章をコピーしました！</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.7;">Googleのページに移動します。<br>口コミ欄に貼り付けて投稿してください。</div>
+      <div id="copyModalBar" style="margin-top:20px;height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+        <div id="copyModalBarFill" style="height:100%;width:0%;background:var(--brand);border-radius:99px;transition:width 1.8s linear;"></div>
+      </div>
+    </div>
+  </div>
+
   <div class="screen" id="screen-complete">
     <div class="complete-section">
       <div class="complete-icon-wrap">
@@ -1508,28 +1522,43 @@ function regenerate() {
 function copyAndOpen() {
   var text = document.getElementById('resultText').value;
   _generatedText = text;
-
   var gbpUrl = (_config && _config.gbpUrl) ? _config.gbpUrl : null;
-  if (gbpUrl) {
-    setTimeout(function() { window.open(gbpUrl, '_blank'); }, 300);
+
+  function afterCopy() {
+    _clearProgress();
+    saveLog(true);
+    // モーダル表示
+    var modal = document.getElementById('copyModal');
+    var box   = document.getElementById('copyModalBox');
+    var fill  = document.getElementById('copyModalBarFill');
+    modal.style.display = 'flex';
+    // アニメイン
+    requestAnimationFrame(function() {
+      requestAnimationFrame(function() {
+        box.style.transform = 'scale(1)';
+        box.style.opacity   = '1';
+        fill.style.width    = '100%';
+      });
+    });
+    // 1.8秒後にGoogleを開いてcomplete画面へ
+    setTimeout(function() {
+      modal.style.display = 'none';
+      box.style.transform = 'scale(0.92)';
+      box.style.opacity   = '0';
+      fill.style.width    = '0%';
+      if (gbpUrl) { window.open(gbpUrl, '_blank'); }
+      showScreen('screen-complete');
+    }, 1800);
   }
 
-  saveLog(true);
-
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(function() {
-      _clearProgress();
-      showToast();
-      showScreen('screen-complete');
-    }).catch(function() {
+    navigator.clipboard.writeText(text).then(afterCopy).catch(function() {
       fallbackCopy(text);
-      _clearProgress();
-      showScreen('screen-complete');
+      afterCopy();
     });
   } else {
     fallbackCopy(text);
-    _clearProgress();
-    showScreen('screen-complete');
+    afterCopy();
   }
 }
 

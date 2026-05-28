@@ -1875,15 +1875,26 @@ function buildSurveyBScreen(bInfo, schoolName, color, qs) {
 }
 
 function buildLoadingScreen(bInfo, schoolName, color) {
+  var c = escG(color);
   return pvHeader(bInfo, schoolName, color) +
-    '<div class="pv-card-body"><div class="pv-ai-wrap">' +
-    '<div class="pv-ai-icon" style="background:' + escG(color) + '18;">' +
-    '<svg viewBox="0 0 24 24" fill="none" stroke="' + escG(color) + '" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="26" height="26"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/></svg>' +
-    '</div>' +
-    '<div style="width:28px;height:28px;border:2.5px solid ' + escG(color) + '33;border-top:2.5px solid ' + escG(color) + ';border-radius:50%;animation:spin 0.8s linear infinite;"></div>' +
-    '<div style="font-size:14px;font-weight:700;color:#1a2535;">口コミ文を作っています</div>' +
-    '<div style="font-size:11px;color:#64748b;line-height:1.6;">AIが回答をもとに<br>文章を生成しています</div>' +
-    '</div></div>';
+    '<div class="pv-card-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;gap:12px;">' +
+    '<svg viewBox="0 0 200 160" width="160" height="128" xmlns="http://www.w3.org/2000/svg">' +
+      '<g style="transform-origin:100px 72px;animation:ld-spin 9s linear infinite;">' +
+        '<rect x="62" y="34" width="76" height="76" rx="3" fill="none" stroke="' + c + '" stroke-width="1.5" opacity=".3" transform="rotate(45 100 72)"/>' +
+      '</g>' +
+      '<g style="transform-origin:100px 72px;animation:ld-rspin 5s linear infinite;">' +
+        '<rect x="78" y="50" width="44" height="44" rx="3" fill="none" stroke="' + c + '" stroke-width="2" opacity=".65"/>' +
+      '</g>' +
+      '<circle cx="100" cy="72" r="4.5" fill="' + c + '" opacity=".85" style="transform-origin:100px 72px;animation:ld-pulse 2s ease-in-out infinite;"/>' +
+      '<rect x="68"  y="130" width="10" height="2" rx="1" fill="' + c + '" style="animation:ld-bar 1.4s ease-in-out infinite 0s;"/>' +
+      '<rect x="82"  y="130" width="10" height="2" rx="1" fill="' + c + '" style="animation:ld-bar 1.4s ease-in-out infinite .18s;"/>' +
+      '<rect x="96"  y="130" width="10" height="2" rx="1" fill="' + c + '" style="animation:ld-bar 1.4s ease-in-out infinite .36s;"/>' +
+      '<rect x="110" y="130" width="10" height="2" rx="1" fill="' + c + '" style="animation:ld-bar 1.4s ease-in-out infinite .54s;"/>' +
+      '<rect x="124" y="130" width="10" height="2" rx="1" fill="' + c + '" style="animation:ld-bar 1.4s ease-in-out infinite .72s;"/>' +
+    '</svg>' +
+    '<div style="font-size:15px;font-weight:700;color:#1a2535;">文章を整えています</div>' +
+    '<div style="font-size:12px;color:#64748b;line-height:1.7;animation:ld-fade 3s ease-in-out infinite;">入力内容をもとに整えています…</div>' +
+    '</div>';
 }
 
 function buildResultScreen(bInfo, schoolName, color) {
