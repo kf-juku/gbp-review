@@ -592,7 +592,6 @@ body {
   <div class="header-logo" id="headerLogo">
     <div class="header-logo-text" id="logoText"></div>
   </div>
-  <div class="brand-name" id="brandName"></div>
   <div class="school-name" id="schoolName"></div>
 </div>
 
@@ -837,8 +836,6 @@ function applyConfig(cfg) {
   })();
 
   // ブランド名・学校名
-  var brandNameEl = document.getElementById('brandName');
-  if (brandNameEl) brandNameEl.textContent = cfg.brandName || '';
   var schoolNameEl = document.getElementById('schoolName');
   if (schoolNameEl) schoolNameEl.textContent = cfg.schoolName || '';
   // ロゴ
