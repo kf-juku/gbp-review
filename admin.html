@@ -981,8 +981,9 @@ body {
     <div class="page-body">
       <div class="card">
         <h2>設問・選択肢の編集
-          <span class="help-badge" onclick="this.classList.toggle('open')">?
-            <span class="tooltip">設問タイプ：<br>・single：選択肢から1つ選ぶ<br>・multi：複数選択できる<br>・free：自由記述テキストボックス<br><br>↑↓で設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に戻します（上書き）。</span>
+          <span class="tt" style="margin-left:6px;">
+            <span class="help-mark">?</span>
+            <span class="tt-body">↑↓ボタンで設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に上書きします。</span>
           </span>
         </h2>
         <div class="card-sub">ブランドを選んで設問を編集してください。</div>
@@ -1756,10 +1757,19 @@ function renderQuestionEditor() {
       if (q.type === opt[0]) o.selected = true;
       sel.appendChild(o);
     });
+    // タイプselect横のヘルプチップ
+    var typeHelp = document.createElement('span');
+    typeHelp.className = 'tt';
+    typeHelp.style.cssText = 'margin-left:4px;display:inline-flex;align-items:center;';
+    typeHelp.innerHTML =
+      '<span class="help-mark">?</span>' +
+      '<span class="tt-body">単一選択：選択肢から1つだけ選べます。<br>複数選択：当てはまるものを複数選べます。<br>自由記述：テキストボックスで自由に入力できます。</span>';
+    controls.appendChild(sel);
+    controls.appendChild(typeHelp);
+
     sel.onchange = (function(qIdx) {
       return function() { onTypeChange(qIdx); };
     })(qi);
-    controls.appendChild(sel);
 
     // ↑↓ボタン
     if (qi > 0) {
@@ -1797,7 +1807,11 @@ function renderQuestionEditor() {
     toggleRow.className = 'role-toggle-row';
     var toggleLabel = document.createElement('span');
     toggleLabel.className = 'role-toggle-label';
-    toggleLabel.textContent = '立場（保護者/生徒/その他）で選択肢を出し分ける';
+    toggleLabel.innerHTML = '立場（保護者/生徒/その他）で選択肢を出し分ける' +
+      '<span class="tt" style="margin-left:5px;">' +
+        '<span class="help-mark">?</span>' +
+        '<span class="tt-body">立場（保護者/生徒/その他）はON/OFFに関わらず常にAIの文章生成に考慮されます。<br>このトグルは「立場によって表示する選択肢を変えるかどうか」の設定です。<br><br>ONにすると：立場ごとに異なる選択肢を設定できます。<br>OFFにすると：全立場に共通の選択肢を表示します。<br><br>ON⇔OFFを切り替えると、直前の内容を引き継ぎます。</span>' +
+      '</span>';
     var toggleSwitch = document.createElement('label');
     toggleSwitch.className = 'toggle-switch';
     var toggleInput = document.createElement('input');
@@ -1900,6 +1914,50 @@ function onRoleToggleChange(qi) {
   var isRoleOn = toggleEl ? toggleEl.checked : false;
   var sel = document.getElementById('qtype_' + qi);
   var isFree = sel ? sel.value === 'free' : false;
+
+  if (!isFree) {
+    if (isRoleOn) {
+      // OFF→ON：共通選択肢の内容を3タブ全部にコピー
+      var commonChoices = [];
+      var choicesWrap = document.getElementById('choices_' + qi);
+      if (choicesWrap) {
+        choicesWrap.querySelectorAll('input[type="text"]').forEach(function(inp) {
+          if (inp.value.trim()) commonChoices.push(inp.value.trim());
+        });
+      }
+      ['parent', 'student', 'other'].forEach(function(role) {
+        var panelWrap = document.getElementById('choices_' + qi + '_' + role);
+        if (!panelWrap) return;
+        panelWrap.innerHTML = '';
+        commonChoices.forEach(function(c, ci) {
+          panelWrap.appendChild(makeChoiceRow(qi, role, ci, c));
+        });
+        if (commonChoices.length === 0) {
+          panelWrap.appendChild(makeChoiceRow(qi, role, 0, ''));
+        }
+      });
+    } else {
+      // ON→OFF：保護者タブの内容を共通選択肢にコピー
+      var parentChoices = [];
+      var parentWrap = document.getElementById('choices_' + qi + '_parent');
+      if (parentWrap) {
+        parentWrap.querySelectorAll('input[type="text"]').forEach(function(inp) {
+          if (inp.value.trim()) parentChoices.push(inp.value.trim());
+        });
+      }
+      var choicesWrap2 = document.getElementById('choices_' + qi);
+      if (choicesWrap2) {
+        choicesWrap2.innerHTML = '';
+        parentChoices.forEach(function(c, ci) {
+          choicesWrap2.appendChild(makeChoiceRow(qi, 'normal', ci, c));
+        });
+        if (parentChoices.length === 0) {
+          choicesWrap2.appendChild(makeChoiceRow(qi, 'normal', 0, ''));
+        }
+      }
+    }
+  }
+
   var normalArea = document.getElementById('normalchoices_' + qi);
   var roleArea = document.getElementById('rolechoices_' + qi);
   if (normalArea) normalArea.style.display = (!isFree && !isRoleOn) ? 'block' : 'none';
