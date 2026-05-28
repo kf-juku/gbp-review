@@ -796,7 +796,7 @@ body {
     <div style="margin-top:20px;">
       <div class="question-label" style="font-size:1rem;margin-bottom:4px;">実際に感じたことを、ひとことだけ書いてください</div>
       <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">きれいな文章でなくて大丈夫です。単語だけ・箇条書きでもOKです。</div>
-      <textarea id="freeTextB" rows="8" class="free-text-area" id="freeTextB"></textarea>
+      <textarea id="freeTextB" rows="8" class="free-text-area" oninput="updateGenerateBtnB()"></textarea>
     </div>
     <div style="font-size:0.78rem;color:var(--text-sub);margin-top:10px;text-align:center;">入力内容をもとに、投稿しやすい文章に整えています</div>
     <button class="btn btn-primary" id="generateBtnB" onclick="startGenerateB()" style="margin-top:12px;" disabled>文章を整える</button>

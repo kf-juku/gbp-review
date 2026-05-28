@@ -1818,7 +1818,7 @@ function buildQScreens(bInfo, schoolName, color, qs) {
     if (q.type === 'free') {
       bodyHtml += '<textarea class="pv-free-ta" placeholder="' + escG(q.placeholder || 'ご自由にどうぞ') + '" readonly></textarea>' +
         '<div style="font-size:10px;color:#94a3b8;margin-bottom:10px;">※ 書かなくても口コミ文は作れます</div>' +
-        '<div class="pv-btn" style="background:' + escG(color) + ';">口コミ文を作る ✨</div>';
+        '<div class="pv-btn" style="background:' + escG(color) + ';">文章を整える</div>';
     } else {
       var choices = [];
       if (q.roleCondition && q.choicesByRole) {
@@ -1853,8 +1853,8 @@ function buildQScreens(bInfo, schoolName, color, qs) {
 
 function buildSurveyBScreen(bInfo, schoolName, color, qs) {
   var q0 = (qs && qs.length > 0) ? qs[0] : null;
-  var qText = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
-  var choices = (q0 && Array.isArray(q0.choices)) ? q0.choices.slice(0, 6) : [];
+  var qText = (q0 && q0.text) ? q0.text : '通ってみて、印象に残っていることを選んでください。';
+  var choices = (q0 && Array.isArray(q0.choices)) ? q0.choices.slice(0, 7) : [];
   var badge = '<div class="pv-badge" style="color:' + escG(color) + ';border-color:' + escG(color) + ';background:' + escG(color) + '18;">✓ 複数選べます</div>';
   var choicesHtml = choices.map(function(c) {
     return '<div class="pv-choice">' +
@@ -1864,10 +1864,11 @@ function buildSurveyBScreen(bInfo, schoolName, color, qs) {
   var bodyHtml = badge +
     '<div class="pv-q-label" style="margin-top:8px;">' + escG(qText) + '</div>' +
     choicesHtml +
-    '<div style="margin-top:12px;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;">気づいたことを自由に書いてください</div>' +
-    '<div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">箇条書きでも、単語だけでも、思ったままでOKです</div>' +
-    '<textarea class="pv-free-ta" placeholder="例：&#10;・先生が名前を覚えてくれてた&#10;・テストの点が上がった" readonly style="min-height:80px;"></textarea>' +
-    '<div class="pv-btn" style="background:' + escG(color) + ';margin-top:10px;">口コミ文を作る ✨</div>';
+    '<div style="margin-top:12px;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;">実際に感じたことを、ひとことだけ書いてください</div>' +
+    '<div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">きれいな文章でなくて大丈夫です。単語だけ・箇条書きでもOKです。</div>' +
+    '<textarea class="pv-free-ta" placeholder="例：&#10;・息子が先生おもしろいと言っている&#10;・家では聞かないけど、塾の先生の話は聞いている" readonly style="min-height:80px;"></textarea>' +
+    '<div style="font-size:9px;color:#94a3b8;margin-top:6px;text-align:center;">入力内容をもとに、投稿しやすい文章に整えています</div>' +
+    '<div class="pv-btn" style="background:' + escG(color) + ';margin-top:8px;">文章を整える</div>';
   return pvHeader(bInfo, schoolName, color) +
     '<div class="pv-card-body">' + bodyHtml + '</div>';
 }
@@ -1893,6 +1894,7 @@ function buildResultScreen(bInfo, schoolName, color) {
     '<div style="font-size:10px;color:#64748b;margin-bottom:10px;">内容を確認して、修正があれば直接編集できます。</div>' +
     '<textarea class="pv-res-ta" readonly>子供が通い始めてから勉強への姿勢が変わりました。先生がとても丁寧に指導してくださり、テストの点数も着実に上がっています。質問しやすい雰囲気があり…</textarea>' +
     '<div class="pv-btn" style="background:' + escG(color) + ';">完成！Googleに投稿する →</div>' +
+    '<div class="pv-btn" style="background:white;color:#374151;border:1.5px solid #e2e8f0;margin-top:6px;">もう一度生成する</div>' +
     '</div>';
 }
 
@@ -1901,7 +1903,7 @@ function buildCompleteScreen(bInfo, schoolName, color) {
     '<div class="pv-card-body"><div class="pv-complete-wrap">' +
     '<div class="pv-complete-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg></div>' +
     '<div style="font-size:16px;font-weight:800;color:#1a2535;margin-bottom:8px;letter-spacing:-0.02em;">ありがとうございました！</div>' +
-    '<div style="font-size:11px;color:#64748b;line-height:1.7;">口コミのご協力に感謝します。<br>星の数を選んで投稿してください。</div>' +
+    '<div style="font-size:11px;color:#64748b;line-height:1.7;">口コミのご協力に感謝します。<br>Google口コミ画面で星の数を選び、<br>内容を確認して投稿してください。</div>' +
     '</div></div>';
 }
 
