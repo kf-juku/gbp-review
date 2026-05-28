@@ -995,6 +995,9 @@ body {
       <button class="nav-item active" onclick="switchTab('tab-schools', this)" data-tab="tab-schools">
         <span class="nav-icon">🏫</span> 教室設定
       </button>
+      <button class="nav-item" onclick="switchTab('tab-brand', this)" data-tab="tab-brand">
+        <span class="nav-icon">🎛️</span> ブランド設定
+      </button>
       <button class="nav-item" onclick="switchTab('tab-questions', this)" data-tab="tab-questions">
         <span class="nav-icon">📝</span> 設問編集
       </button>
@@ -1041,6 +1044,48 @@ body {
     </div>
   </div>
 
+  <!-- ブランド設定 -->
+  <div class="tab-content" id="tab-brand">
+    <div class="page-header">
+      <span class="page-header-icon">🎛️</span>
+      <h2>ブランド設定</h2>
+    </div>
+    <div class="page-body">
+      <div class="card">
+        <h2>UIモード選択</h2>
+        <div class="card-sub">ブランドごとにアンケートの入力方式（UIモード）を設定します。モードを変えると設問・プロンプトが自動で切り替わります。</div>
+
+        <div class="brand-section-title" style="margin-top:20px;">進学塾クロフネ</div>
+        <div class="field-row">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px;">
+            <input type="radio" name="uiModeKurofune" value="A" id="uiModeA_kurofune" onchange="onUiModeChange('kurofune','A')">
+            <span><strong>パターンA</strong>（選択肢メイン）— 選択肢で材料を集めてAIが口コミ文を生成</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="radio" name="uiModeKurofune" value="B" id="uiModeB_kurofune" onchange="onUiModeChange('kurofune','B')">
+            <span><strong>パターンB</strong>（自由記述メイン）— テーマ選択＋メモ書きをAIが自然な文に整形</span>
+          </label>
+        </div>
+
+        <div class="brand-section-title" style="margin-top:24px;">コードアドベンチャー</div>
+        <div class="field-row">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:8px;">
+            <input type="radio" name="uiModeCa" value="A" id="uiModeA_ca" onchange="onUiModeChange('ca','A')">
+            <span><strong>パターンA</strong>（選択肢メイン）</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+            <input type="radio" name="uiModeCa" value="B" id="uiModeB_ca" onchange="onUiModeChange('ca','B')">
+            <span><strong>パターンB</strong>（自由記述メイン）</span>
+          </label>
+        </div>
+
+        <div class="field-hint" style="margin-top:16px;">
+          ※ UIモードを変更すると、設問編集・プロンプトタブに表示される内容がそのモードのものに切り替わります。
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 設問編集 -->
   <div class="tab-content" id="tab-questions">
     <div class="page-header">
@@ -1055,11 +1100,12 @@ body {
             <span class="tt-body">↑↓ボタンで設問の順番を入れ替えられます。<br>「デフォルトに戻す」は初期設定の設問に上書きします。</span>
           </span>
         </h2>
-        <div class="card-sub">ブランドを選んで設問を編集してください。</div>
+        <div class="card-sub">ブランドを選んで設問を編集してください。UIモードに応じてパターンA/Bの設問が表示されます。</div>
         <div class="brand-tabs">
           <button class="brand-tab active" onclick="switchBrand('kurofune')">進学塾クロフネ</button>
           <button class="brand-tab" onclick="switchBrand('ca')">コードアドベンチャー</button>
         </div>
+        <div id="uiModeBanner" style="margin:8px 0 12px;padding:8px 12px;background:var(--surface-2,#f4f6fb);border-radius:8px;font-size:0.85rem;color:var(--text-sub,#666);"></div>
         <div id="questionEditor"></div>
         <button class="btn-save" onclick="saveQuestions()">💾 保存する</button>
         <button class="btn-default" onclick="resetQuestions()">デフォルトに戻す</button>
@@ -1084,58 +1130,16 @@ body {
             <li id="helpCostItem" style="display:none;">API利用料は月次でご請求します（クロフネ内部利用）。</li>
           </ul>
         </div>
-        <!-- UIパターン選択 -->
-        <div class="field-row">
-          <label class="field-label" style="font-weight:700;margin-bottom:8px;">UIパターン（ブランド別）</label>
-          <div class="field-hint" style="margin-bottom:12px;">アンケートの入力方式を選択します。ブランドごとに設定できます。</div>
-          <div style="display:flex;gap:32px;flex-wrap:wrap;">
-            <div>
-              <div style="font-weight:600;margin-bottom:6px;">進学塾クロフネ</div>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" name="uiPatternKurofune" value="A" id="patternA_kurofune" onchange="saveUiPattern('kurofune','A')"> パターンA（選択肢メイン）
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
-                <input type="radio" name="uiPatternKurofune" value="B" id="patternB_kurofune" onchange="saveUiPattern('kurofune','B')"> パターンB（自由記述メイン）
-              </label>
-            </div>
-            <div>
-              <div style="font-weight:600;margin-bottom:6px;">コードアドベンチャー</div>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-                <input type="radio" name="uiPatternCa" value="A" id="patternA_ca" onchange="saveUiPattern('ca','A')"> パターンA（選択肢メイン）
-              </label>
-              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:4px;">
-                <input type="radio" name="uiPatternCa" value="B" id="patternB_ca" onchange="saveUiPattern('ca','B')"> パターンB（自由記述メイン）
-              </label>
-            </div>
-          </div>
-        </div>
-
         <div class="brand-tabs">
           <button class="brand-tab active" onclick="switchPromptBrand('kurofune')">進学塾クロフネ</button>
           <button class="brand-tab" onclick="switchPromptBrand('ca')">コードアドベンチャー</button>
         </div>
-
-        <!-- パターンA プロンプト -->
-        <div id="promptSectionA">
-          <div class="field-row" style="margin-bottom:4px;">
-            <label class="field-label">パターンAプロンプト（選択肢メイン）</label>
-          </div>
-          <div class="field-row">
-            <textarea class="prompt-area" id="promptArea"></textarea>
-          </div>
+        <div id="promptUiModeBanner" style="margin:8px 0 12px;padding:8px 12px;background:var(--surface-2,#f4f6fb);border-radius:8px;font-size:0.85rem;color:var(--text-sub,#666);"></div>
+        <div class="field-row">
+          <label class="field-label" id="promptAreaLabel">AIプロンプト</label>
+          <textarea class="prompt-area" id="promptArea"></textarea>
         </div>
-
-        <!-- パターンB プロンプト -->
-        <div id="promptSectionB">
-          <div class="field-row" style="margin-bottom:4px;margin-top:16px;">
-            <label class="field-label">パターンBプロンプト（自由記述メイン）</label>
-          </div>
-          <div class="field-row">
-            <textarea class="prompt-area" id="promptAreaB"></textarea>
-          </div>
-        </div>
-
-        <div class="field-row" style="margin-top:16px;">
+        <div class="field-row" style="margin-top:16px;" id="episodePlaceholderRow">
           <label class="field-label">エピソード欄のサンプルテキスト（薄字ガイド）</label>
           <input type="text" class="form-input" id="episodePlaceholderInput"
             placeholder="例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。">
@@ -1561,6 +1565,7 @@ function loadAdminConfig() {
       if (d.error) { showStatus('設定の読み込みに失敗しました: ' + d.error, 'error'); return; }
       _adminData = d;
       renderSchoolFields();
+      renderBrandSettings();
       renderQuestionEditor();
       renderPromptArea();
       renderDesign();
@@ -1939,8 +1944,44 @@ function switchBrand(brand) {
   renderQuestionEditor();
 }
 
+// ブランド設定タブ
+function renderBrandSettings() {
+  var uiModes = _adminData.uiModes || {};
+  ['kurofune', 'ca'].forEach(function(brand) {
+    var mode = uiModes[brand] || 'A';
+    var elA = document.getElementById('uiModeA_' + brand);
+    var elB = document.getElementById('uiModeB_' + brand);
+    if (elA) elA.checked = (mode !== 'B');
+    if (elB) elB.checked = (mode === 'B');
+  });
+}
+
+function onUiModeChange(brand, mode) {
+  if (!_adminData.uiModes) _adminData.uiModes = {};
+  _adminData.uiModes[brand] = mode;
+  // 設問タブ・プロンプトタブのバナー更新
+  if (brand === _editBrand) renderUiModeBanner();
+  if (brand === _promptBrand) renderPromptUiModeBanner();
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'uiMode', brand: brand, data: mode });
+}
+
+function renderUiModeBanner() {
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_editBrand] || 'A';
+  var el = document.getElementById('uiModeBanner');
+  if (el) el.textContent = '現在のUIモード：パターン' + mode + '（' + (mode === 'B' ? '自由記述メイン' : '選択肢メイン') + '）の設問を編集しています';
+}
+
 function renderQuestionEditor() {
-  var qs = (_adminData.questions && _adminData.questions[_editBrand]) ? _adminData.questions[_editBrand] : [];
+  renderUiModeBanner();
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_editBrand] || 'A';
+  var qs;
+  if (mode === 'B') {
+    qs = (_adminData.questionsB && _adminData.questionsB[_editBrand]) ? _adminData.questionsB[_editBrand] : [];
+  } else {
+    qs = (_adminData.questionsA && _adminData.questionsA[_editBrand]) ? _adminData.questionsA[_editBrand] : [];
+  }
   var wrap = document.getElementById('questionEditor');
   wrap.innerHTML = '';
   var total = qs.length;
@@ -2313,14 +2354,21 @@ function saveQuestions() {
       return;
     }
   }
-  if (!_adminData.questions) _adminData.questions = {};
-  _adminData.questions[_editBrand] = result;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'questions', brand: _editBrand, data: result });
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_editBrand] || 'A';
+  var qKey = mode === 'B' ? 'questionsB' : 'questionsA';
+  var typeKey = mode === 'B' ? 'questionsB' : 'questionsA';
+  if (!_adminData[qKey]) _adminData[qKey] = {};
+  _adminData[qKey][_editBrand] = result;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: typeKey, brand: _editBrand, data: result });
 }
 
 function resetQuestions() {
   if (!confirm('設問をデフォルトに戻しますか？保存されている設問は上書きされます。')) return;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'questions', brand: _editBrand, data: null },
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_editBrand] || 'A';
+  var typeKey = mode === 'B' ? 'questionsB' : 'questionsA';
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: typeKey, brand: _editBrand, data: null },
     function() { loadAdminConfig(); },
     'リセットしました ✅'
   );
@@ -2337,47 +2385,58 @@ function switchPromptBrand(brand) {
   renderPromptArea();
 }
 
+function renderPromptUiModeBanner() {
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_promptBrand] || 'A';
+  var el = document.getElementById('promptUiModeBanner');
+  if (el) el.textContent = '現在のUIモード：パターン' + mode + '（' + (mode === 'B' ? '自由記述メイン' : '選択肢メイン') + '）のプロンプトを編集しています';
+  // パターンBの場合はエピソード欄を非表示
+  var epRow = document.getElementById('episodePlaceholderRow');
+  if (epRow) epRow.style.display = mode === 'B' ? 'none' : '';
+  // ラベル更新
+  var lbl = document.getElementById('promptAreaLabel');
+  if (lbl) lbl.textContent = 'パターン' + mode + ' AIプロンプト';
+}
+
 function renderPromptArea() {
-  var prompts  = _adminData.prompts  || {};
-  var promptsB = _adminData.promptsB || {};
-  var patterns = _adminData.uiPatterns || {};
-  document.getElementById('promptArea').value  = prompts[_promptBrand]  || '';
-  document.getElementById('promptAreaB').value = promptsB[_promptBrand] || '';
-  var eps = _adminData.episodePlaceholders || {};
-  document.getElementById('episodePlaceholderInput').value = eps[_promptBrand] || '';
-  // UIパターンラジオボタンを反映
-  var patA_k = document.getElementById('patternA_kurofune');
-  var patB_k = document.getElementById('patternB_kurofune');
-  var patA_c = document.getElementById('patternA_ca');
-  var patB_c = document.getElementById('patternB_ca');
-  if (patA_k) patA_k.checked = (patterns.kurofune !== 'B');
-  if (patB_k) patB_k.checked = (patterns.kurofune === 'B');
-  if (patA_c) patA_c.checked = (patterns.ca !== 'B');
-  if (patB_c) patB_c.checked = (patterns.ca === 'B');
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_promptBrand] || 'A';
+  if (mode === 'B') {
+    var promptsB = _adminData.promptsB || {};
+    document.getElementById('promptArea').value = promptsB[_promptBrand] || '';
+  } else {
+    var promptsA = _adminData.promptsA || {};
+    document.getElementById('promptArea').value = promptsA[_promptBrand] || '';
+    var eps = _adminData.episodePlaceholders || {};
+    document.getElementById('episodePlaceholderInput').value = eps[_promptBrand] || '';
+  }
+  renderPromptUiModeBanner();
 }
 
 function savePrompt() {
-  var val  = document.getElementById('promptArea').value;
-  var valB = document.getElementById('promptAreaB').value;
-  var ep   = document.getElementById('episodePlaceholderInput').value;
-  if (!_adminData.prompts)  _adminData.prompts  = {};
-  if (!_adminData.promptsB) _adminData.promptsB = {};
-  if (!_adminData.episodePlaceholders) _adminData.episodePlaceholders = {};
-  _adminData.prompts[_promptBrand]  = val;
-  _adminData.promptsB[_promptBrand] = valB;
-  _adminData.episodePlaceholders[_promptBrand] = ep;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: val, dataB: valB, episodePlaceholder: ep });
-}
-
-function saveUiPattern(brand, pattern) {
-  if (!_adminData.uiPatterns) _adminData.uiPatterns = {};
-  _adminData.uiPatterns[brand] = pattern;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'uiPattern', brand: brand, data: pattern });
+  var val = document.getElementById('promptArea').value;
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_promptBrand] || 'A';
+  if (mode === 'B') {
+    if (!_adminData.promptsB) _adminData.promptsB = {};
+    _adminData.promptsB[_promptBrand] = val;
+    postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'promptB', brand: _promptBrand, data: val });
+  } else {
+    var ep = document.getElementById('episodePlaceholderInput').value;
+    if (!_adminData.promptsA) _adminData.promptsA = {};
+    if (!_adminData.episodePlaceholders) _adminData.episodePlaceholders = {};
+    _adminData.promptsA[_promptBrand] = val;
+    _adminData.episodePlaceholders[_promptBrand] = ep;
+    postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'promptA', brand: _promptBrand, data: val, episodePlaceholder: ep });
+  }
 }
 
 function resetPrompt() {
   if (!confirm('プロンプトをデフォルトに戻しますか？')) return;
-  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'prompt', brand: _promptBrand, data: null },
+  var uiModes = _adminData.uiModes || {};
+  var mode = uiModes[_promptBrand] || 'A';
+  var typeKey = mode === 'B' ? 'promptB' : 'promptA';
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: typeKey, brand: _promptBrand, data: null },
     function() { loadAdminConfig(); },
     'リセットしました ✅'
   );

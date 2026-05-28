@@ -772,17 +772,17 @@ body {
     <button class="btn btn-ghost" id="skipBtn" onclick="startGenerate()" style="display:none">スキップして作る</button>
   </div>
 
-  <!-- パターンB専用：選択肢＋自由記述（1画面統合） -->
+  <!-- パターンB: テーマ選択＋自由記述（1画面統合） -->
   <div class="screen" id="screen-survey-b">
-    <button class="btn-back" id="backBtnB" onclick="goBackB()">← 前に戻る</button>
-    <div class="question-label" id="questionLabelB" style="margin-bottom:12px;"></div>
-    <div class="multi-badge" id="multiBadgeB">
+    <button class="btn-back" onclick="goBackB()">← 前に戻る</button>
+    <div class="question-label" id="questionLabelB"></div>
+    <div class="multi-badge">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
       複数選べます（当てはまるものをすべてタップ）
     </div>
     <div class="choice-list" id="choicesAreaB"></div>
     <div style="margin-top:20px;">
-      <div class="question-label" style="font-size:1rem;margin-bottom:6px;">気づいたことを自由に書いてください</div>
+      <div class="question-label" style="font-size:1rem;margin-bottom:4px;">気づいたことを自由に書いてください</div>
       <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">箇条書きでも、単語だけでも、思ったままでOKです</div>
       <textarea id="freeTextB" rows="8" class="free-text-area"
         placeholder="例：&#10;・先生が名前を覚えてくれてた&#10;・テスト前に追加で補講してもらった&#10;・最初は嫌がってたけど今は自分から行く"></textarea>
@@ -881,7 +881,9 @@ function escHtml(s) {
 var _tenant = '', _school = '', _config = null;
 var _questions = [], _currentStep = 0, _answers = [];
 var _respondentName = '', _campaignActive = false, _respondentRole = '';
-var _uiPattern = 'A'; // 'A' or 'B'
+var _uiMode = 'A';        // 'A'（選択肢メイン）or 'B'（自由記述メイン）
+var _bSelected = [];      // パターンB選択済みテーマ
+var _bFreeText = '';      // パターンB自由記述
 var _generatedText = '';
 var _retryFn = null;
 var _isGenerating = false;
@@ -956,11 +958,9 @@ function applyConfig(cfg) {
     logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + (cfg.brandName || cfg.schoolName || '') + '</div>';
   }
 
-  // 設問
+  // UIモード・設問
+  _uiMode    = cfg.uiMode    || 'A';
   _questions = cfg.questions || [];
-
-  // UIパターン
-  _uiPattern = cfg.uiPattern || 'A';
 
   // ページタイトル
   document.title = (cfg.schoolName || '') + ' - 口コミを書く';
@@ -1001,7 +1001,7 @@ function selectRole(role) {
     document.getElementById('campaignTitle').textContent = cp.name || 'キャンペーン開催中！';
     document.getElementById('campaignReward').textContent = cp.reward || '';
     showScreen('screen-name');
-  } else if (_uiPattern === 'B') {
+  } else if (_uiMode === 'B') {
     initSurveyB();
     showScreen('screen-survey-b');
   } else {
@@ -1016,7 +1016,7 @@ function goToSurvey() {
   _respondentName = document.getElementById('nameInput').value.trim();
   _saveProgress();
   if (!_respondentName) return;
-  if (_uiPattern === 'B') {
+  if (_uiMode === 'B') {
     initSurveyB();
     showScreen('screen-survey-b');
   } else {
@@ -1027,150 +1027,100 @@ function goToSurvey() {
 
 
 // ============================================================
-// パターンB：選択＋自由記述（1画面統合）
+// パターンB：テーマ選択＋自由記述（1画面統合）
 // ============================================================
 
-// パターンBのデフォルト設問（GASのgetConfigから来なかった場合のフォールバック）
 var DEFAULT_B_CHOICES_KUROFUNE = [
-  '先生のこと',
-  '授業・指導のこと',
-  '成績や結果のこと',
-  '子どもの変化のこと',
-  '教室の雰囲気のこと',
-  '安心・信頼のこと',
-  'その他'
+  '先生のこと', '授業・指導のこと', '成績や結果のこと',
+  '子どもの変化のこと', '教室の雰囲気のこと', '安心・信頼のこと', 'その他'
 ];
 var DEFAULT_B_CHOICES_CA = [
-  '先生のこと',
-  '授業・教え方のこと',
-  '子どもの変化のこと',
-  '続けられている理由',
-  '教室の雰囲気のこと',
-  'その他'
+  '先生のこと', '授業・教え方のこと', '子どもの変化のこと',
+  '続けられている理由', '教室の雰囲気のこと', 'その他'
 ];
-
-var _bSelected = [];   // パターンBの選択済みテーマ
-var _bFreeText = '';   // パターンBの自由記述
 
 function initSurveyB() {
   _bSelected = [];
   _bFreeText = '';
 
-  // 設問ラベル
-  var q = (_config && _config.questions && _config.questions.length > 0)
-    ? _config.questions[0]
-    : null;
+  // 設問ラベル（GASのquestionsから取得、なければデフォルト）
+  var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
   var labelEl = document.getElementById('questionLabelB');
-  labelEl.textContent = (q && q.text) ? q.text : '通ってみて、どんなことが良かったですか？';
+  if (labelEl) labelEl.textContent = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
 
-  // 選択肢：GASのquestions[0].choicesを使う、なければデフォルト
+  // 選択肢（GASのquestionsから取得、なければデフォルト）
   var brand = (_config && _config.brand) || 'kurofune';
-  var choices = (q && Array.isArray(q.choices) && q.choices.length > 0)
-    ? q.choices
+  var choices = (q0 && Array.isArray(q0.choices) && q0.choices.length > 0)
+    ? q0.choices
     : (brand === 'ca' ? DEFAULT_B_CHOICES_CA : DEFAULT_B_CHOICES_KUROFUNE);
 
   var listEl = document.getElementById('choicesAreaB');
   listEl.innerHTML = '';
-
   choices.forEach(function(choice) {
     var btn = document.createElement('button');
     btn.className = 'choice-item';
     btn.innerHTML = '<span class="choice-check"></span><span>' + escHtml(choice) + '</span>';
     btn.onclick = function() {
       var idx = _bSelected.indexOf(choice);
-      if (idx >= 0) {
-        _bSelected.splice(idx, 1);
-        btn.classList.remove('selected');
-      } else {
-        _bSelected.push(choice);
-        btn.classList.add('selected');
-      }
+      if (idx >= 0) { _bSelected.splice(idx, 1); btn.classList.remove('selected'); }
+      else           { _bSelected.push(choice);   btn.classList.add('selected'); }
       updateGenerateBtnB();
     };
     listEl.appendChild(btn);
   });
 
-  // 自由記述
+  // 自由記述リセット
   var ftEl = document.getElementById('freeTextB');
-  ftEl.value = '';
-  ftEl.addEventListener('input', function() {
-    _bFreeText = ftEl.value;
-    updateGenerateBtnB();
-  });
-
+  if (ftEl) {
+    ftEl.value = '';
+    ftEl.oninput = function() { _bFreeText = ftEl.value; updateGenerateBtnB(); };
+  }
   updateGenerateBtnB();
 }
 
 function updateGenerateBtnB() {
   var ftEl = document.getElementById('freeTextB');
   var hasFree = ftEl && ftEl.value.trim().length > 0;
-  var hasSelected = _bSelected.length > 0;
-  // 自由記述かテーマ選択のどちらかがあれば生成可能
-  document.getElementById('generateBtnB').disabled = !(hasFree || hasSelected);
+  var btn = document.getElementById('generateBtnB');
+  if (btn) btn.disabled = !(_bSelected.length > 0 || hasFree);
 }
 
 function goBackB() {
-  if (_campaignActive) {
-    showScreen('screen-name');
-  } else {
-    showScreen('screen-role');
-  }
+  if (_campaignActive) { showScreen('screen-name'); }
+  else                 { showScreen('screen-role'); }
 }
 
 function startGenerateB() {
   if (_isGenerating) return;
   if (_generateCount >= GENERATE_LIMIT) {
-    showError(
-      '生成回数の上限に達しました',
-      '1回の利用につき' + GENERATE_LIMIT + '回まで生成できます。最初からやり直すか、時間をおいてから再度お試しください。',
-      null
-    );
+    showError('生成回数の上限に達しました',
+      '1回の利用につき' + GENERATE_LIMIT + '回まで生成できます。最初からやり直すか、時間をおいてから再度お試しください。', null);
     return;
   }
   _isGenerating = true;
   _generateCount++;
-
-  // 自由記述テキストを取得
   var ftEl = document.getElementById('freeTextB');
   _bFreeText = ftEl ? ftEl.value : '';
-
   showScreen('screen-loading');
 
-  // AIへ渡す回答を構築
-  // 設問ラベル
-  var q0 = (_config && _config.questions && _config.questions.length > 0)
-    ? _config.questions[0]
-    : null;
+  var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
   var q0text = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
-
-  var answers = [];
-  // 選択したテーマ（複数選択）
-  answers.push({
-    question: q0text,
-    answer: _bSelected.join('、')
-  });
-  // 自由記述
-  answers.push({
-    question: '気づいたこと・エピソード（自由記述）',
-    answer: _bFreeText
-  });
 
   var payload = {
     action: 'generateReview',
     tenant: _tenant,
     school: _school,
     respondentRole: _respondentRole,
-    answers: answers
+    answers: [
+      { question: q0text,                              answer: _bSelected.join('、') },
+      { question: '気づいたこと・エピソード（自由記述）', answer: _bFreeText }
+    ]
   };
 
   gasPost(payload)
     .then(function(data) {
-      if (data.error) {
-        _isGenerating = false;
-        showError('口コミ文の生成に失敗しました', data.error, startGenerateB);
-        return;
-      }
       _isGenerating = false;
+      if (data.error) { showError('口コミ文の生成に失敗しました', data.error, startGenerateB); return; }
       _generatedText = data.text || '';
       document.getElementById('resultText').value = _generatedText;
       showScreen('screen-result');
