@@ -1641,8 +1641,12 @@ function getBrandInfo(brand) {
 }
 
 function getBrandQuestions(brand) {
-  var qs = (_adminData && _adminData.questions && _adminData.questions[brand]) ? _adminData.questions[brand] : [];
-  return qs;
+  var uiModes = (_adminData && _adminData.uiModes) ? _adminData.uiModes : {};
+  var mode = uiModes[brand] || 'A';
+  if (mode === 'B') {
+    return (_adminData && _adminData.questionsB && _adminData.questionsB[brand]) ? _adminData.questionsB[brand] : [];
+  }
+  return (_adminData && _adminData.questionsA && _adminData.questionsA[brand]) ? _adminData.questionsA[brand] : [];
 }
 
 function loadIframePreview() {
@@ -1717,14 +1721,28 @@ function renderGallery() {
   if (!grid) return;
   grid.innerHTML = '';
 
-  var screens = [
-    { label: '立場選択（TOP）', html: buildRoleScreen(bInfo, schoolName, color) },
-    { label: 'Q1 〜 Q' + qs.length + '（設問）', html: buildQScreens(bInfo, schoolName, color, qs) },
-    { label: 'AI生成中', html: buildLoadingScreen(bInfo, schoolName, color) },
-    { label: '生成結果', html: buildResultScreen(bInfo, schoolName, color) },
-    { label: '完了', html: buildCompleteScreen(bInfo, schoolName, color) },
-    { label: 'エラー', html: buildErrorScreen(bInfo, schoolName, color) }
-  ];
+  var uiModes = (_adminData && _adminData.uiModes) ? _adminData.uiModes : {};
+  var currentMode = uiModes[brand] || 'A';
+  var screens;
+  if (currentMode === 'B') {
+    screens = [
+      { label: '立場選択（TOP）', html: buildRoleScreen(bInfo, schoolName, color) },
+      { label: 'テーマ選択＋自由記述（パターンB）', html: buildSurveyBScreen(bInfo, schoolName, color, qs) },
+      { label: 'AI生成中', html: buildLoadingScreen(bInfo, schoolName, color) },
+      { label: '生成結果', html: buildResultScreen(bInfo, schoolName, color) },
+      { label: '完了', html: buildCompleteScreen(bInfo, schoolName, color) },
+      { label: 'エラー', html: buildErrorScreen(bInfo, schoolName, color) }
+    ];
+  } else {
+    screens = [
+      { label: '立場選択（TOP）', html: buildRoleScreen(bInfo, schoolName, color) },
+      { label: 'Q1 〜 Q' + qs.length + '（設問）', html: buildQScreens(bInfo, schoolName, color, qs) },
+      { label: 'AI生成中', html: buildLoadingScreen(bInfo, schoolName, color) },
+      { label: '生成結果', html: buildResultScreen(bInfo, schoolName, color) },
+      { label: '完了', html: buildCompleteScreen(bInfo, schoolName, color) },
+      { label: 'エラー', html: buildErrorScreen(bInfo, schoolName, color) }
+    ];
+  }
 
   // Q1〜Qnは設問ごとに展開
   var expanded = [];
@@ -1831,6 +1849,27 @@ function buildQScreens(bInfo, schoolName, color, qs) {
     return { label: 'Q' + (idx + 1) + '：' + (q.text || '').slice(0, 16) + (q.text && q.text.length > 16 ? '…' : ''),
       html: pvHeader(bInfo, schoolName, color) + '<div class="pv-card-body">' + bodyHtml + '</div>' };
   });
+}
+
+function buildSurveyBScreen(bInfo, schoolName, color, qs) {
+  var q0 = (qs && qs.length > 0) ? qs[0] : null;
+  var qText = (q0 && q0.text) ? q0.text : '通ってみて、どんなことが良かったですか？';
+  var choices = (q0 && Array.isArray(q0.choices)) ? q0.choices.slice(0, 6) : [];
+  var badge = '<div class="pv-badge" style="color:' + escG(color) + ';border-color:' + escG(color) + ';background:' + escG(color) + '18;">✓ 複数選べます</div>';
+  var choicesHtml = choices.map(function(c) {
+    return '<div class="pv-choice">' +
+      '<span style="display:inline-block;width:14px;height:14px;border:1.5px solid #cbd5e1;border-radius:3px;margin-right:6px;vertical-align:middle;"></span>' +
+      escG(c) + '</div>';
+  }).join('');
+  var bodyHtml = badge +
+    '<div class="pv-q-label" style="margin-top:8px;">' + escG(qText) + '</div>' +
+    choicesHtml +
+    '<div style="margin-top:12px;font-size:11px;font-weight:600;color:#374151;margin-bottom:4px;">気づいたことを自由に書いてください</div>' +
+    '<div style="font-size:10px;color:#94a3b8;margin-bottom:6px;">箇条書きでも、単語だけでも、思ったままでOKです</div>' +
+    '<textarea class="pv-free-ta" placeholder="例：&#10;・先生が名前を覚えてくれてた&#10;・テストの点が上がった" readonly style="min-height:80px;"></textarea>' +
+    '<div class="pv-btn" style="background:' + escG(color) + ';margin-top:10px;">口コミ文を作る ✨</div>';
+  return pvHeader(bInfo, schoolName, color) +
+    '<div class="pv-card-body">' + bodyHtml + '</div>';
 }
 
 function buildLoadingScreen(bInfo, schoolName, color) {

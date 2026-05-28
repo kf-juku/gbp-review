@@ -953,7 +953,15 @@ function applyConfig(cfg) {
   // ロゴ
   var logoDiv = document.getElementById('headerLogo');
   if (cfg.logoUrl) {
-    logoDiv.innerHTML = '<img src="' + cfg.logoUrl + '" alt="' + (cfg.brandName || cfg.schoolName || '') + '">';
+    var fallbackName = cfg.brandName || cfg.schoolName || '';
+    var img = document.createElement('img');
+    img.src = cfg.logoUrl;
+    img.alt = fallbackName;
+    img.onerror = function() {
+      logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + fallbackName + '</div>';
+    };
+    logoDiv.innerHTML = '';
+    logoDiv.appendChild(img);
   } else {
     logoDiv.innerHTML = '<div class="header-logo-text" id="logoText">' + (cfg.brandName || cfg.schoolName || '') + '</div>';
   }
