@@ -451,20 +451,32 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 55vh;
-  gap: 18px;
+  gap: 8px;
   text-align: center;
 }
-.ai-loading-icon {
-  width: 68px; height: 68px;
-  background: var(--brand-light);
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* SVGアニメ */
+@keyframes ld-spin  { to { transform: rotate(360deg); } }
+@keyframes ld-rspin { to { transform: rotate(-360deg); } }
+@keyframes ld-bar   { 0%,100%{opacity:.15} 50%{opacity:1} }
+@keyframes ld-pulse { 0%,100%{opacity:.4;transform:scale(0.95)} 50%{opacity:1;transform:scale(1.05)} }
+.ld-outer { animation: ld-spin  9s linear infinite; transform-origin:50% 50%; }
+.ld-inner { animation: ld-rspin 5s linear infinite; transform-origin:50% 50%; }
+.ld-dot   { animation: ld-pulse 2s ease-in-out infinite; }
+.ld-b1 { animation: ld-bar 1.4s ease-in-out infinite 0s; }
+.ld-b2 { animation: ld-bar 1.4s ease-in-out infinite .18s; }
+.ld-b3 { animation: ld-bar 1.4s ease-in-out infinite .36s; }
+.ld-b4 { animation: ld-bar 1.4s ease-in-out infinite .54s; }
+.ld-b5 { animation: ld-bar 1.4s ease-in-out infinite .72s; }
+/* メッセージフェード */
+@keyframes ld-fade { 0%{opacity:0;transform:translateY(6px)} 15%,85%{opacity:1;transform:translateY(0)} 100%{opacity:0;transform:translateY(-4px)} }
+.ai-loading-msg {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.7;
+  min-height: 2.4em;
+  animation: ld-fade 3s ease-in-out infinite;
 }
-.ai-loading-icon svg { width: 32px; height: 32px; color: var(--brand); }
-.ai-loading h2 { font-size: 17px; font-weight: 700; color: var(--text); }
-.ai-loading p { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.ai-loading h2 { font-size: 16px; font-weight: 700; color: var(--text); margin: 4px 0 2px; }
 
 /* ==============================
    生成結果
@@ -793,14 +805,30 @@ body {
   <!-- 画面3: AI生成中 -->
   <div class="screen" id="screen-loading">
     <div class="ai-loading">
-      <div class="ai-loading-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6L12 2z"/>
-        </svg>
-      </div>
-      <div class="spinner"></div>
+      <!-- SVGアニメ（ブランドカラー対応） -->
+      <svg id="ldSvg" viewBox="0 0 200 160" width="200" height="160" xmlns="http://www.w3.org/2000/svg">
+        <!-- 外回転：大きいひし形 -->
+        <g class="ld-outer" style="transform-origin:100px 72px">
+          <rect x="62" y="34" width="76" height="76" rx="3"
+            fill="none" stroke="var(--brand)" stroke-width="1.5" opacity=".3"
+            transform="rotate(45 100 72)"/>
+        </g>
+        <!-- 内逆回転：小さい正方形 -->
+        <g class="ld-inner" style="transform-origin:100px 72px">
+          <rect x="78" y="50" width="44" height="44" rx="3"
+            fill="none" stroke="var(--brand)" stroke-width="2" opacity=".65"/>
+        </g>
+        <!-- 中心ドット -->
+        <circle class="ld-dot" cx="100" cy="72" r="4.5" fill="var(--brand)" opacity=".85" style="transform-origin:100px 72px"/>
+        <!-- バーウェーブ -->
+        <rect class="ld-b1" x="68"  y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
+        <rect class="ld-b2" x="82"  y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
+        <rect class="ld-b3" x="96"  y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
+        <rect class="ld-b4" x="110" y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
+        <rect class="ld-b5" x="124" y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
+      </svg>
       <h2>文章を整えています</h2>
-      <p>入力内容をもとに、投稿しやすい<br>文章に整えています</p>
+      <div class="ai-loading-msg" id="ldMsg">入力内容をもとに整えています…</div>
     </div>
   </div>
 
@@ -1626,12 +1654,48 @@ function tryResume() {
 // ============================================================
 // 画面切り替え
 // ============================================================
+// ============================================================
+// ローディングメッセージローテーション
+// ============================================================
+var _ldTimer = null;
+var _ldMessages = [
+  '入力内容をもとに整えています…',
+  'いただいた言葉を大切に使います',
+  'もう少しで完成します…',
+  '読みやすい文章に整えています',
+  'ほぼ完成しています…'
+];
+var _ldIdx = 0;
+
+function startLoadingMessages() {
+  _ldIdx = 0;
+  var el = document.getElementById('ldMsg');
+  if (el) el.textContent = _ldMessages[0];
+  _ldTimer = setInterval(function() {
+    if (_ldIdx < _ldMessages.length - 1) {
+      _ldIdx++;
+      var el = document.getElementById('ldMsg');
+      if (el) el.textContent = _ldMessages[_ldIdx];
+    }
+    // 最後のメッセージに達したらそのままキープ（繰り返さない）
+  }, 5000);
+}
+
+function stopLoadingMessages() {
+  if (_ldTimer) { clearInterval(_ldTimer); _ldTimer = null; }
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function(s) {
     s.classList.remove('active');
   });
   var target = document.getElementById(id);
   if (target) target.classList.add('active');
+  if (id === 'screen-loading') {
+    startLoadingMessages();
+  } else {
+    stopLoadingMessages();
+  }
   window.scrollTo(0, 0);
 }
 
