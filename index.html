@@ -1042,20 +1042,66 @@ function renderStep() {
   } else if (q.type === 'single') {
     var list = document.createElement('div');
     list.className = 'choice-list';
+    // その他入力欄（single用）
+    var otherWrapS = document.createElement('div');
+    otherWrapS.className = 'other-input-wrap';
+    var otherTextS = document.createElement('textarea');
+    otherTextS.className = 'other-input';
+    otherTextS.placeholder = 'その他の内容を入力してください';
+    otherTextS.rows = 3;
+    otherWrapS.appendChild(otherTextS);
+    // 復元：既存回答が「その他：〜」なら展開
+    var curAns = _answers[_currentStep] || '';
+    if (typeof curAns === 'string' && curAns.indexOf('その他：') === 0) {
+      otherWrapS.classList.add('open');
+      otherTextS.value = curAns.replace('その他：', '');
+    }
     q.choices.forEach(function(choice) {
       var btn = document.createElement('button');
-      btn.className = 'choice-item' + (_answers[_currentStep] === choice ? ' selected' : '');
+      var isOther = (choice === 'その他');
+      var isSelected = isOther
+        ? (typeof curAns === 'string' && curAns.indexOf('その他：') === 0)
+        : (_answers[_currentStep] === choice);
+      btn.className = 'choice-item' + (isSelected ? ' selected' : '');
       btn.textContent = choice;
       btn.onclick = function() {
-        _answers[_currentStep] = choice;
-        _saveProgress();
-        if (isLast) {
-          startGenerate();
+        // 全ボタンのselectedを外す
+        list.querySelectorAll('.choice-item').forEach(function(b) { b.classList.remove('selected'); });
+        btn.classList.add('selected');
+        if (isOther) {
+          otherWrapS.classList.add('open');
+          otherTextS.focus();
+          _answers[_currentStep] = 'その他：' + otherTextS.value.trim();
+          _saveProgress();
+          // その他は自動遷移しない（入力待ち）
+          if (isLast) {
+            generateBtn.disabled = !otherTextS.value.trim();
+          } else {
+            nextBtn.style.display = 'block';
+          }
         } else {
-          goNext();
+          otherWrapS.classList.remove('open');
+          otherTextS.value = '';
+          _answers[_currentStep] = choice;
+          _saveProgress();
+          if (isLast) {
+            startGenerate();
+          } else {
+            goNext();
+          }
         }
       };
       list.appendChild(btn);
+      if (isOther) {
+        list.appendChild(otherWrapS);
+        otherTextS.addEventListener('input', function() {
+          _answers[_currentStep] = 'その他：' + otherTextS.value.trim();
+          _saveProgress();
+          if (isLast) {
+            generateBtn.disabled = !otherTextS.value.trim();
+          }
+        });
+      }
     });
     area.appendChild(list);
   } else if (q.type === 'multi') {
