@@ -1106,8 +1106,8 @@ var DEFAULT_B_CHOICES_KUROFUNE = [
   '子どもの変化のこと', '教室の雰囲気のこと', '安心・信頼のこと', 'その他'
 ];
 var DEFAULT_B_CHOICES_CA = [
-  '先生のこと', '授業・教え方のこと', '子どもの変化のこと',
-  '続けられている理由', '教室の雰囲気のこと', 'その他'
+  '先生のこと', 'プログラミングを学べること', '子どもの変化・成長のこと',
+  '楽しく続けられていること', '教室の雰囲気のこと', '連絡・サポートのこと', 'その他'
 ];
 
 function initSurveyB() {
@@ -1145,9 +1145,16 @@ function initSurveyB() {
   if (ftEl) {
     ftEl.value = '';
     var isStudent = (_respondentRole === 'student');
-    ftEl.placeholder = isStudent
-      ? '例：\n・先生が話しやすい\n・わからないところを聞きやすい\n・前より勉強が嫌じゃなくなった'
-      : '例：\n・息子が先生おもしろいと言っている\n・家では聞かないけど、塾の先生の話は聞いている\n・プリントは多いけど、対策はしっかりしている';
+    var isCABrand = (((_config && _config.brand) || 'kurofune') === 'ca');
+    if (isCABrand) {
+      ftEl.placeholder = isStudent
+        ? '例：\n・マイクラで作品を作るのが楽しい\n・わからないところは先生に聞ける\n・自分で考えて直せるようになった'
+        : '例：\n・マイクラが好きで楽しんで通っている\n・学校の先生に「考える力がついてきた」と褒められた\n・先生がいいタイミングで助けてくれる';
+    } else {
+      ftEl.placeholder = isStudent
+        ? '例：\n・先生が話しやすくて質問しやすい\n・苦手だった教科が少しずつわかるようになった\n・教室の雰囲気が良くて通いやすい'
+        : '例：\n・子どもが「先生が面白い」と言って楽しく通っている\n・親にも丁寧に向き合ってくれて相談しやすい\n・料金設定が分かりやすくてありがたい';
+    }
     ftEl.oninput = function() { _bFreeText = ftEl.value; updateGenerateBtnB(); };
   }
   updateGenerateBtnB();
@@ -1219,13 +1226,13 @@ function startGenerateB() {
       if (data.error) { showError('口コミ文の生成に失敗しました', data.error, startGenerateB); return; }
       _generatedText = data.text || '';
       // 不適切入力チェック
-      if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
+      if (_generatedText.indexOf('INAPPROPRIATE_INPUT') !== -1) {
         _isGenerating = false;
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyB);
         return;
       }
       // 入力不足チェック
-      if (_generatedText.trim() === 'INSUFFICIENT_INPUT') {
+      if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
         _isGenerating = false;
         showError('内容が少し足りないようです', '書かれた内容が少なすぎるか、うまく読み取れなかったため、文章を作成できませんでした。一言でいいので、印象に残っていることを具体的に書いてみてください。', null, backToSurveyB);
         return;
@@ -1301,9 +1308,16 @@ function renderStep() {
   if (q.type === 'free') {
     var ta = document.createElement('textarea');
     ta.className = 'free-text-area';
+    var epIsCA = (((_config && _config.brand) || 'kurofune') === 'ca');
     ta.placeholder = (_config && _config.episodePlaceholder)
       ? _config.episodePlaceholder
-      : '例：定期テスト前に先生が特別に補講してくれて、数学が20点上がりました。';
+      : (epIsCA
+        ? (_respondentRole === 'student'
+          ? '例：マイクラのプログラミングが楽しくて、毎週の授業を楽しみにしています。'
+          : '例：ゲームのプログラミングを楽しそうに学んでいて、先生もいいタイミングで助けてくれます。')
+        : (_respondentRole === 'student'
+          ? '例：先生が話しやすくて、分からないところを気軽に質問できる雰囲気です。'
+          : '例：子どもにも親にも丁寧に向き合って指導してくれて、相談もしやすいです。'));
     ta.value = _answers[_currentStep] || '';
     ta.addEventListener('input', function() {
       _answers[_currentStep] = ta.value;
@@ -1540,13 +1554,13 @@ function startGenerate() {
       _isGenerating = false;
       _generatedText = data.text || '';
       // 不適切入力チェック
-      if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
+      if (_generatedText.indexOf('INAPPROPRIATE_INPUT') !== -1) {
         _isGenerating = false;
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyA);
         return;
       }
       // 入力不足チェック
-      if (_generatedText.trim() === 'INSUFFICIENT_INPUT') {
+      if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
         _isGenerating = false;
         showError('内容が少し足りないようです', '書かれた内容が少なすぎるか、うまく読み取れなかったため、文章を作成できませんでした。一言でいいので、印象に残っていることを具体的に書いてみてください。', null, backToSurveyA);
         return;
