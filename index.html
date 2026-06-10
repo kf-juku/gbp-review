@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>口コミを書く</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Ctext%20y%3D%27.9em%27%20font-size%3D%2790%27%3E%E2%AD%90%3C/text%3E%3C/svg%3E">
+    <title>口コミを書く</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -913,6 +914,7 @@ body {
       <h2 id="errorTitle">エラーが発生しました。<br>もう一度お試しください。</h2>
       <p id="errorMsg"></p>
       <button class="btn btn-primary" id="errorRetryBtn" onclick="retryAction()">もう一度試す</button>
+      <button class="btn btn-primary" id="errorBackBtn" onclick="backToSurveyFromError()" style="display:none; margin-top:10px;">アンケートに戻る</button>
       <button class="btn btn-ghost" onclick="restart()">最初からやり直す</button>
     </div>
   </div>
@@ -943,6 +945,7 @@ var _bSelected = [];      // パターンB選択済みテーマ
 var _bFreeText = '';      // パターンB自由記述
 var _generatedText = '';
 var _retryFn = null;
+var _backFn = null;
 var _isGenerating = false;
 var _generateCount = 0;
 var GENERATE_LIMIT = 5;
@@ -1218,7 +1221,13 @@ function startGenerateB() {
       // 不適切入力チェック
       if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
         _isGenerating = false;
-        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null);
+        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyB);
+        return;
+      }
+      // 入力不足チェック
+      if (_generatedText.trim() === 'INSUFFICIENT_INPUT') {
+        _isGenerating = false;
+        showError('内容が少し足りないようです', '書かれた内容が少なすぎるか、うまく読み取れなかったため、文章を作成できませんでした。一言でいいので、印象に残っていることを具体的に書いてみてください。', null, backToSurveyB);
         return;
       }
       document.getElementById('resultText').value = _generatedText;
@@ -1533,7 +1542,13 @@ function startGenerate() {
       // 不適切入力チェック
       if (_generatedText.trim() === 'INAPPROPRIATE_INPUT') {
         _isGenerating = false;
-        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null);
+        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyA);
+        return;
+      }
+      // 入力不足チェック
+      if (_generatedText.trim() === 'INSUFFICIENT_INPUT') {
+        _isGenerating = false;
+        showError('内容が少し足りないようです', '書かれた内容が少なすぎるか、うまく読み取れなかったため、文章を作成できませんでした。一言でいいので、印象に残っていることを具体的に書いてみてください。', null, backToSurveyA);
         return;
       }
       document.getElementById('resultText').value = _generatedText;
@@ -1639,17 +1654,36 @@ function saveLog(copied) {
 // ============================================================
 // エラー・リスタート
 // ============================================================
-function showError(title, msg, retryFn) {
+function showError(title, msg, retryFn, backFn) {
   document.getElementById('errorTitle').textContent = title;
   document.getElementById('errorMsg').textContent = msg;
   _retryFn = retryFn;
+  _backFn = backFn || null;
   var retryBtn = document.getElementById('errorRetryBtn');
   retryBtn.style.display = retryFn ? 'block' : 'none';
+  var backBtn = document.getElementById('errorBackBtn');
+  if (backBtn) backBtn.style.display = backFn ? 'block' : 'none';
   showScreen('screen-error');
 }
 
 function retryAction() {
   if (_retryFn) _retryFn();
+}
+
+// エラー画面からアンケートに戻る（INSUFFICIENT/INAPPROPRIATE時のみ表示）
+// 入力内容・選択状態はDOMと変数に残っているため、画面を切り替えるだけで復元される
+function backToSurveyFromError() {
+  if (_backFn) _backFn();
+}
+
+function backToSurveyB() {
+  showScreen('screen-survey-b');
+  updateGenerateBtnB();
+}
+
+function backToSurveyA() {
+  renderStep();
+  showScreen('screen-survey');
 }
 
 function restart() {
