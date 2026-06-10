@@ -842,7 +842,7 @@ body {
         <rect class="ld-b4" x="110" y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
         <rect class="ld-b5" x="124" y="130" width="10" height="2" rx="1" fill="var(--brand)"/>
       </svg>
-      <h2>文章を作っています</h2>
+      <h2>文章を整えています</h2>
       <div class="ai-loading-msg" id="ldMsg">そのままお待ちください…</div>
     </div>
   </div>
@@ -915,7 +915,7 @@ body {
       <p id="errorMsg"></p>
       <button class="btn btn-primary" id="errorRetryBtn" onclick="retryAction()">もう一度試す</button>
       <button class="btn btn-primary" id="errorBackBtn" onclick="backToSurveyFromError()" style="display:none; margin-top:10px;">アンケートに戻る</button>
-      <button class="btn btn-ghost" onclick="restart()">最初からやり直す</button>
+      <button class="btn btn-ghost" id="errorRestartBtn" onclick="restart()">最初からやり直す</button>
     </div>
   </div>
 
@@ -1663,6 +1663,9 @@ function showError(title, msg, retryFn, backFn) {
   retryBtn.style.display = retryFn ? 'block' : 'none';
   var backBtn = document.getElementById('errorBackBtn');
   if (backBtn) backBtn.style.display = backFn ? 'block' : 'none';
+  // 「アンケートに戻る」表示時は「最初からやり直す」を隠す（選択肢を1つに絞る）
+  var restartBtn = document.getElementById('errorRestartBtn');
+  if (restartBtn) restartBtn.style.display = backFn ? 'none' : 'block';
   showScreen('screen-error');
 }
 
