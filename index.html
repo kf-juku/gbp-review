@@ -521,6 +521,31 @@ body {
   border-color: var(--brand);
   box-shadow: 0 0 0 3px var(--brand-light);
 }
+.result-textarea-wrap {
+  position: relative;
+  margin-bottom: 20px;
+}
+.result-textarea-wrap .result-textarea {
+  margin-bottom: 0;
+}
+.edit-hint-pill {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 11.5px;
+  padding: 4px 9px;
+  border-radius: 99px;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.edit-pencil { font-size: 13px; line-height: 1; }
+/* 編集中（フォーカス時）はピルを消す */
+.result-textarea:focus + .edit-hint-pill { opacity: 0; }
 
 /* ==============================
    完了画面
@@ -853,8 +878,10 @@ body {
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       口コミ文ができました
     </div>
-    <div class="result-hint">内容を確認して、修正があれば直接編集できます。</div>
-    <textarea class="result-textarea" id="resultText"></textarea>
+    <div class="result-textarea-wrap">
+      <textarea class="result-textarea" id="resultText"></textarea>
+      <div class="edit-hint-pill"><span class="edit-pencil">&#9998;</span>タップして編集</div>
+    </div>
     <button class="btn btn-primary" id="copyBtn" onclick="copyAndOpen()">完成！Googleに投稿する →</button>
     <button class="btn btn-secondary" onclick="regenerate()">もう一度生成する</button>
     <button class="btn btn-ghost" onclick="editInput()">← 入力画面に戻る</button>
@@ -895,6 +922,22 @@ body {
   </div>
 
   <!-- エラー画面 -->
+  <!-- 画面: 追加質問（具体エピソードが薄いとき1回だけ） -->
+  <div class="screen" id="screen-moreinfo">
+    <div class="question-label" id="moreInfoQuestion" style="margin-bottom:6px;"></div>
+    <div class="multi-badge">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+      当てはまるものをタップ（いくつでもOK）
+    </div>
+    <div class="choice-list" id="moreInfoChoices"></div>
+    <div style="margin-top:16px;">
+      <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">他にもあれば、ひとことだけ書いてください（任意）</div>
+      <textarea id="moreInfoFree" rows="4" class="free-text-area" placeholder="例：テストの点が上がった／自分から勉強するようになった"></textarea>
+    </div>
+    <button class="btn btn-primary" id="moreInfoBtn" onclick="submitMoreInfo()" style="margin-top:14px;">この内容で文章を作る →</button>
+    <button class="btn btn-ghost" onclick="skipMoreInfo()" style="margin-top:8px;">今の内容のまま作る</button>
+  </div>
+
   <div class="screen" id="screen-error">
     <div class="error-section">
       <div class="error-icon-wrap">
@@ -940,6 +983,10 @@ var _backFn = null;
 var _isGenerating = false;
 var _generateCount = 0;
 var GENERATE_LIMIT = 5;
+// 追加質問フロー（仕様§13-3）：1回だけ・生成回数にカウントしない
+var _moreInfoAsked = false;   // 追加質問を既に1回行ったか
+var _lastGenMode = 'A';       // 直近の生成モード（'A'/'B'）。追加質問後の再生成でどちらを呼ぶか判定
+var _moreInfoSelected = [];   // 追加質問で選んだ選択肢
 
 // ============================================================
 // 初期化
@@ -1239,11 +1286,17 @@ function startGenerateB() {
       _isGenerating = false;
       if (data.error) { showError('口コミ文の生成に失敗しました', data.error, startGenerateB); return; }
       _generatedText = data.text || '';
+      _lastGenMode = 'B';
       // 不適切入力チェック
       if (_generatedText.indexOf('INAPPROPRIATE_INPUT') !== -1) {
         _isGenerating = false;
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyB);
         return;
+      }
+      // 追加質問（具体エピソードが薄いとき）：まだ1回も聞いていなければ追加質問画面へ
+      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1 && !_moreInfoAsked) {
+        _isGenerating = false;
+        if (handleNeedMoreInfo(_generatedText)) return;
       }
       // 入力不足チェック
       if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
@@ -1567,11 +1620,17 @@ function startGenerate() {
       }
       _isGenerating = false;
       _generatedText = data.text || '';
+      _lastGenMode = 'A';
       // 不適切入力チェック
       if (_generatedText.indexOf('INAPPROPRIATE_INPUT') !== -1) {
         _isGenerating = false;
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyA);
         return;
+      }
+      // 追加質問（具体エピソードが薄いとき）：まだ1回も聞いていなければ追加質問画面へ
+      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1 && !_moreInfoAsked) {
+        _isGenerating = false;
+        if (handleNeedMoreInfo(_generatedText)) return;
       }
       // 入力不足チェック
       if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
@@ -1586,6 +1645,121 @@ function startGenerate() {
     .catch(function() {
       _isGenerating = false;
       showError('通信エラーが発生しました', 'ネットワーク接続を確認してもう一度お試しください。', startGenerate);
+    });
+}
+
+// ============================================================
+// 追加質問フロー（仕様§13-3）：具体エピソードが薄いとき1回だけ質問する
+// ============================================================
+// NEED_MORE_INFO{json} を検知してパース→追加質問画面を表示。成功でtrue。
+function handleNeedMoreInfo(raw) {
+  var idx = raw.indexOf('NEED_MORE_INFO');
+  if (idx === -1) return false;
+  var jsonStr = raw.substring(idx + 'NEED_MORE_INFO'.length).trim();
+  var obj;
+  try { obj = JSON.parse(jsonStr); } catch (e) { return false; }
+  if (!obj || !obj.question || !Array.isArray(obj.choices) || obj.choices.length === 0) return false;
+
+  // 質問文
+  var qEl = document.getElementById('moreInfoQuestion');
+  if (qEl) qEl.textContent = obj.question;
+
+  // 選択チップ（複数選択可・既存choice-itemと同じ見た目）
+  _moreInfoSelected = [];
+  var listEl = document.getElementById('moreInfoChoices');
+  listEl.innerHTML = '';
+  obj.choices.forEach(function(choice) {
+    var btn = document.createElement('button');
+    btn.className = 'choice-item';
+    btn.innerHTML = '<span class="choice-check"></span><span>' + escHtml(choice) + '</span>';
+    btn.onclick = function() {
+      var i = _moreInfoSelected.indexOf(choice);
+      if (i >= 0) { _moreInfoSelected.splice(i, 1); btn.classList.remove('selected'); }
+      else        { _moreInfoSelected.push(choice); btn.classList.add('selected'); }
+    };
+    listEl.appendChild(btn);
+  });
+
+  // 自由記述をクリア
+  var freeEl = document.getElementById('moreInfoFree');
+  if (freeEl) freeEl.value = '';
+
+  showScreen('screen-moreinfo');
+  return true;
+}
+
+// 選んだ内容＋自由記述を元入力に足して再生成（カウントしない・必ず生成）
+function submitMoreInfo() {
+  var freeEl = document.getElementById('moreInfoFree');
+  var extraFree = freeEl ? freeEl.value.trim() : '';
+  var parts = _moreInfoSelected.slice();
+  if (extraFree) parts.push(extraFree);
+  var extraText = parts.join('、');
+  runForcedGenerate(extraText);
+}
+
+// 追加質問をスキップして今の内容のまま必ず生成
+function skipMoreInfo() {
+  runForcedGenerate('');
+}
+
+// 追加質問後の再生成：元入力に追記して forceGenerate で送信。生成回数にはカウントしない（仕様§13-3-5）。
+function runForcedGenerate(extraText) {
+  if (_isGenerating) return;
+  _moreInfoAsked = true;   // 追加質問は1回だけ
+  _isGenerating = true;
+  showScreen('screen-loading');
+
+  var payload;
+  if (_lastGenMode === 'B') {
+    var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
+    var q0text = (q0 && q0.text) ? q0.text : '通ってみて、印象に残っていることを選んでください。';
+    var freeCombined = _bFreeText || '';
+    if (extraText) freeCombined = (freeCombined ? (freeCombined + '\n') : '') + extraText;
+    payload = {
+      action: 'generateReview',
+      tenant: _tenant, school: _school, respondentRole: _respondentRole,
+      forceGenerate: true,
+      answers: [
+        { question: q0text, answer: _bSelected.join('、') },
+        { question: '気づいたこと・エピソード（自由記述）', answer: freeCombined }
+      ]
+    };
+  } else {
+    var ans = _answers.map(function(a, i) {
+      return { question: _questions[i] ? _questions[i].text : '', answer: Array.isArray(a) ? a.join('、') : (a || '') };
+    });
+    if (extraText) ans.push({ question: '追加で教えてもらった具体的なこと', answer: extraText });
+    payload = {
+      action: 'generateReview',
+      tenant: _tenant, school: _school, respondentRole: _respondentRole,
+      forceGenerate: true,
+      answers: ans
+    };
+  }
+
+  gasPost(payload)
+    .then(function(data) {
+      _isGenerating = false;
+      if (data.error) { showError('口コミ文の生成に失敗しました', data.error, null, (_lastGenMode === 'B' ? backToSurveyB : backToSurveyA)); return; }
+      var t = data.text || '';
+      // forceGenerate後はトークンが返らない想定。万一返っても結果画面には出さずエラー扱い。
+      if (t.indexOf('INAPPROPRIATE_INPUT') !== -1) {
+        showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, (_lastGenMode === 'B' ? backToSurveyB : backToSurveyA));
+        return;
+      }
+      if (t.indexOf('NEED_MORE_INFO') !== -1 || t.indexOf('INSUFFICIENT_INPUT') !== -1) {
+        showError('内容が少し足りないようです', '一言でいいので、印象に残っていることを具体的に書いてみてください。', null, (_lastGenMode === 'B' ? backToSurveyB : backToSurveyA));
+        return;
+      }
+      _generatedText = t;
+      document.getElementById('resultText').value = _generatedText;
+      _saveProgress();
+      showScreen('screen-result');
+    })
+    .catch(function() {
+      _isGenerating = false;
+      showError('通信エラーが発生しました', 'ネットワーク接続を確認してもう一度お試しください。', function(){ runForcedGenerate(extraText); });
     });
 }
 
@@ -1734,11 +1908,13 @@ function backToSurveyFromError() {
 }
 
 function backToSurveyB() {
+  _moreInfoAsked = false;   // 入力をやり直すなら追加質問をまた使える
   showScreen('screen-survey-b');
   updateGenerateBtnB();
 }
 
 function backToSurveyA() {
+  _moreInfoAsked = false;   // 入力をやり直すなら追加質問をまた使える
   renderStep();
   showScreen('screen-survey');
 }
@@ -1755,6 +1931,8 @@ function restart() {
   _isGenerating = false;
   _bSelected = [];
   _bFreeText = '';
+  _moreInfoAsked = false;
+  _moreInfoSelected = [];
   var nameInput = document.getElementById('nameInput');
   if (nameInput) nameInput.value = '';
   document.getElementById('nameNextBtn').disabled = true;
