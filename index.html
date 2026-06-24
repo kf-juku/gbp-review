@@ -924,6 +924,7 @@ body {
   <!-- エラー画面 -->
   <!-- 画面: 追加質問（具体エピソードが薄いとき1回だけ） -->
   <div class="screen" id="screen-moreinfo">
+    <div style="font-size:0.92rem;color:var(--text-sub);margin-bottom:10px;">もう少しだけ教えてください。具体的に書くと、あなたらしい口コミになります。</div>
     <div class="question-label" id="moreInfoQuestion" style="margin-bottom:6px;"></div>
     <div class="multi-badge">
       <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
@@ -932,7 +933,7 @@ body {
     <div class="choice-list" id="moreInfoChoices"></div>
     <div style="margin-top:16px;">
       <div style="font-size:0.82rem;color:var(--text-sub);margin-bottom:8px;">他にもあれば、ひとことだけ書いてください（任意）</div>
-      <textarea id="moreInfoFree" rows="4" class="free-text-area" placeholder="例：テストの点が上がった／自分から勉強するようになった"></textarea>
+      <textarea id="moreInfoFree" rows="4" class="free-text-area"></textarea>
     </div>
     <button class="btn btn-primary" id="moreInfoBtn" onclick="submitMoreInfo()" style="margin-top:14px;">この内容で文章を作る →</button>
     <button class="btn btn-ghost" onclick="skipMoreInfo()" style="margin-top:8px;">今の内容のまま作る</button>
@@ -1293,10 +1294,16 @@ function startGenerateB() {
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyB);
         return;
       }
-      // 追加質問（具体エピソードが薄いとき）：まだ1回も聞いていなければ追加質問画面へ
-      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1 && !_moreInfoAsked) {
+      // 追加質問（具体エピソードが薄いとき）。NEED_MORE_INFO は必ず捕捉し、生トークンを結果欄に出さない
+      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1) {
         _isGenerating = false;
-        if (handleNeedMoreInfo(_generatedText)) return;
+        if (!_moreInfoAsked) {
+          // 1回目：追加質問画面へ
+          if (handleNeedMoreInfo(_generatedText)) return;
+        }
+        // 2回目以降、またはパース失敗：もう質問せず今ある内容で必ず生成する（仕様§13-3-4）
+        runForcedGenerate('');
+        return;
       }
       // 入力不足チェック
       if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
@@ -1627,10 +1634,16 @@ function startGenerate() {
         showError('入力内容を確認してください', '不適切な表現が含まれているため、文章を作成できませんでした。内容を変えてもう一度お試しください。', null, backToSurveyA);
         return;
       }
-      // 追加質問（具体エピソードが薄いとき）：まだ1回も聞いていなければ追加質問画面へ
-      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1 && !_moreInfoAsked) {
+      // 追加質問（具体エピソードが薄いとき）。NEED_MORE_INFO は必ず捕捉し、生トークンを結果欄に出さない
+      if (_generatedText.indexOf('NEED_MORE_INFO') !== -1) {
         _isGenerating = false;
-        if (handleNeedMoreInfo(_generatedText)) return;
+        if (!_moreInfoAsked) {
+          // 1回目：追加質問画面へ
+          if (handleNeedMoreInfo(_generatedText)) return;
+        }
+        // 2回目以降、またはパース失敗：もう質問せず今ある内容で必ず生成する（仕様§13-3-4）
+        runForcedGenerate('');
+        return;
       }
       // 入力不足チェック
       if (_generatedText.indexOf('INSUFFICIENT_INPUT') !== -1) {
@@ -1765,6 +1778,7 @@ function runForcedGenerate(extraText) {
 
 function regenerate() {
   if (_isGenerating) return;
+  _moreInfoAsked = false;   // 手動の「もう一度生成」は新しい試行：追加質問をまた使える
   // 川上さん指示(2026-06-24)：パターンBで生成した人が再生成するとA用関数が呼ばれ、
   // 失敗時にA画面へ飛ばされ自由記述テキストエリアが消える既存バグを修正。uiModeで分岐する。
   if (_uiMode === 'B') {
