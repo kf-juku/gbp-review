@@ -857,6 +857,7 @@ body {
     <textarea class="result-textarea" id="resultText"></textarea>
     <button class="btn btn-primary" id="copyBtn" onclick="copyAndOpen()">完成！Googleに投稿する →</button>
     <button class="btn btn-secondary" onclick="regenerate()">もう一度生成する</button>
+    <button class="btn btn-ghost" onclick="editInput()">← 入力をやり直す</button>
   </div>
 
   <!-- 画面5: 完了 -->
@@ -884,11 +885,13 @@ body {
       <h2>文章をコピーしました！</h2>
       <div class="copy-done-badge">📋 クリップボードに保存済み</div>
       <p style="margin-top:16px;">あとは貼り付けるだけで投稿できます。</p>
+      <p style="margin-top:6px;font-size:0.86rem;color:var(--text-sub);">Googleのページが開かなかったときは、下のボタンを押してください。</p>
+      <button class="btn btn-primary" onclick="openGbp()" style="margin-top:14px;">Googleのページを開く →</button>
       <div class="steps-guide">
         <div class="guide-title">Googleへの投稿手順</div>
         <div class="guide-step">
           <div class="guide-step-num">1</div>
-          <div>自動で開いたGoogleのページで<strong>星をタップ</strong></div>
+          <div>開いたGoogleのページで<strong>星をタップ</strong></div>
         </div>
         <div class="guide-step">
           <div class="guide-step-num">2</div>
@@ -1110,9 +1113,12 @@ var DEFAULT_B_CHOICES_CA = [
   '楽しく続けられていること', '教室の雰囲気のこと', '連絡・サポートのこと', 'その他'
 ];
 
-function initSurveyB() {
-  _bSelected = [];
-  _bFreeText = '';
+function initSurveyB(resume) {
+  // 川上さん指示(2026-06-24)：resume=true なら前回入力を保持（クリアしない）
+  if (!resume) {
+    _bSelected = [];
+    _bFreeText = '';
+  }
 
   // 設問ラベル（GASのquestionsから取得、なければデフォルト）
   var q0 = (_questions && _questions.length > 0) ? _questions[0] : null;
@@ -1130,11 +1136,13 @@ function initSurveyB() {
   choices.forEach(function(choice) {
     var btn = document.createElement('button');
     btn.className = 'choice-item';
+    if (_bSelected.indexOf(choice) >= 0) { btn.classList.add('selected'); }  // 再開時の復元
     btn.innerHTML = '<span class="choice-check"></span><span>' + escHtml(choice) + '</span>';
     btn.onclick = function() {
       var idx = _bSelected.indexOf(choice);
       if (idx >= 0) { _bSelected.splice(idx, 1); btn.classList.remove('selected'); }
       else           { _bSelected.push(choice);   btn.classList.add('selected'); }
+      _saveProgress();   // 再開用に保存
       updateGenerateBtnB();
     };
     listEl.appendChild(btn);
@@ -1143,7 +1151,7 @@ function initSurveyB() {
   // 自由記述：roleに応じたプレースホルダーを設定
   var ftEl = document.getElementById('freeTextB');
   if (ftEl) {
-    ftEl.value = '';
+    ftEl.value = _bFreeText || '';   // 再開時の復元
     var isStudent = (_respondentRole === 'student');
     var isCABrand = (((_config && _config.brand) || 'kurofune') === 'ca');
     if (isCABrand) {
@@ -1155,7 +1163,7 @@ function initSurveyB() {
         ? '例：\n・先生が話しやすくて質問しやすい\n・苦手だった教科が少しずつわかるようになった\n・教室の雰囲気が良くて通いやすい'
         : '例：\n・子どもが「先生が面白い」と言って楽しく通っている\n・親にも丁寧に向き合ってくれて相談しやすい\n・料金設定が分かりやすくてありがたい';
     }
-    ftEl.oninput = function() { _bFreeText = ftEl.value; updateGenerateBtnB(); };
+    ftEl.oninput = function() { _bFreeText = ftEl.value; _saveProgress(); updateGenerateBtnB(); };
   }
   updateGenerateBtnB();
 }
@@ -1238,6 +1246,7 @@ function startGenerateB() {
         return;
       }
       document.getElementById('resultText').value = _generatedText;
+      _saveProgress();   // 川上さん指示(2026-06-24)：生成テキストもローカル保存
       showScreen('screen-result');
     })
     .catch(function() {
@@ -1566,6 +1575,7 @@ function startGenerate() {
         return;
       }
       document.getElementById('resultText').value = _generatedText;
+      _saveProgress();   // 川上さん指示(2026-06-24)：生成テキストもローカル保存
       showScreen('screen-result');
     })
     .catch(function() {
@@ -1576,7 +1586,25 @@ function startGenerate() {
 
 function regenerate() {
   if (_isGenerating) return;
-  startGenerate();
+  // 川上さん指示(2026-06-24)：パターンBで生成した人が再生成するとA用関数が呼ばれ、
+  // 失敗時にA画面へ飛ばされ自由記述テキストエリアが消える既存バグを修正。uiModeで分岐する。
+  if (_uiMode === 'B') {
+    startGenerateB();
+  } else {
+    startGenerate();
+  }
+}
+
+// 川上さん指示(2026-06-24)：結果画面から入力をやり直す。uiModeで正しいアンケート画面に戻す。
+// 入力（_answers / _bSelected・_bFreeText）は保持されたまま復元される。
+function editInput() {
+  if (_uiMode === 'B') {
+    initSurveyB(true);            // resume=true で選択・自由記述を復元
+    showScreen('screen-survey-b');
+  } else {
+    renderStep();                 // _answers から再描画
+    showScreen('screen-survey');
+  }
 }
 
 // ============================================================
@@ -1587,45 +1615,52 @@ function copyAndOpen() {
   _generatedText = text;
   var gbpUrl = (_config && _config.gbpUrl) ? _config.gbpUrl : null;
 
-  function afterCopy() {
-    _clearProgress();
-    saveLog(true);
-    // モーダル表示
-    var modal = document.getElementById('copyModal');
-    var box   = document.getElementById('copyModalBox');
-    var fill  = document.getElementById('copyModalBarFill');
-    modal.style.display = 'flex';
-    // アニメイン
-    requestAnimationFrame(function() {
-      requestAnimationFrame(function() {
-        box.style.transform = 'scale(1)';
-        box.style.opacity   = '1';
-        fill.style.width    = '100%';
-      });
-    });
-    // 1.8秒後にGoogleを開いてcomplete画面へ
-    setTimeout(function() {
-      modal.style.display = 'none';
-      box.style.transform = 'scale(0.92)';
-      box.style.opacity   = '0';
-      fill.style.width    = '0%';
-      if (gbpUrl) { window.open(gbpUrl, '_blank'); }
-      showScreen('screen-complete');
-    }, 1800);
+  // --- 川上さん指示(2026-06-24)：自動ジャンプはタップ直後の同期処理で行う ---
+  // setTimeout後やPromise後のwindow.openはiPhone Safari等でポップアップブロックされるため、
+  // ボタンタップと同じ実行コンテキスト内で同期コピー→即window.openする。
+  // ブロックされた機種は完了画面の手動ボタン(openGbp)で拾う。
+  fallbackCopy(text, true);              // execCommandで同期コピー（toastは出さない）
+  saveLog(true);
+  _clearProgress();
+  if (gbpUrl) { window.open(gbpUrl, '_blank'); }   // タップ直後＝同期。ここがブロック回避の肝
+
+  // 念のためclipboard APIでも上書きコピー（execCommandが効かない環境の保険・非同期でOK）
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function() {});
   }
 
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(text).then(afterCopy).catch(function() {
-      fallbackCopy(text);
-      afterCopy();
+  // モーダル演出 → 完了画面へ
+  var modal = document.getElementById('copyModal');
+  var box   = document.getElementById('copyModalBox');
+  var fill  = document.getElementById('copyModalBarFill');
+  modal.style.display = 'flex';
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      box.style.transform = 'scale(1)';
+      box.style.opacity   = '1';
+      fill.style.width    = '100%';
     });
+  });
+  setTimeout(function() {
+    modal.style.display = 'none';
+    box.style.transform = 'scale(0.92)';
+    box.style.opacity   = '0';
+    fill.style.width    = '0%';
+    showScreen('screen-complete');
+  }, 1800);
+}
+
+// 完了画面の手動ボタン：自動ジャンプがブロックされた人・ページを閉じた人の受け皿
+function openGbp() {
+  var gbpUrl = (_config && _config.gbpUrl) ? _config.gbpUrl : null;
+  if (gbpUrl) {
+    window.open(gbpUrl, '_blank');
   } else {
-    fallbackCopy(text);
-    afterCopy();
+    alert('投稿先のリンクが取得できませんでした。お手数ですが「★ Google口コミ」で検索してご投稿ください。');
   }
 }
 
-function fallbackCopy(text) {
+function fallbackCopy(text, silent) {
   var ta = document.createElement('textarea');
   ta.value = text;
   ta.style.position = 'fixed';
@@ -1634,7 +1669,7 @@ function fallbackCopy(text) {
   ta.select();
   try { document.execCommand('copy'); } catch(e) {}
   document.body.removeChild(ta);
-  showToast();
+  if (!silent) showToast();
 }
 
 function showToast() {
@@ -1736,6 +1771,10 @@ function _saveProgress() {
         respondentName: _respondentName,
         currentStep: _currentStep,
         answers: _answers,
+        uiMode: _uiMode,                 // 川上さん指示(2026-06-24)：再開時にA/B判定するため保存
+        bSelected: _bSelected,           // パターンB：選択済みテーマ
+        bFreeText: _bFreeText,           // パターンB：自由記述
+        generatedText: _generatedText,   // 生成済み口コミ文（再開時に消えないように）
         savedAt: Date.now()
       };
       localStorage.setItem(_lsKey(), JSON.stringify(data));
@@ -1773,13 +1812,31 @@ function tryResume() {
   _respondentName  = data.respondentName  || '';
   _currentStep     = data.currentStep     || 0;
   _answers         = data.answers         || [];
+  _bSelected       = data.bSelected       || [];
+  _bFreeText       = data.bFreeText       || '';
+  _generatedText   = data.generatedText   || '';
   var nameInput = document.getElementById('nameInput');
   if (nameInput && _respondentName) {
     nameInput.value = _respondentName;
     document.getElementById('nameNextBtn').disabled = false;
   }
-  initSurvey(true);
-  showScreen('screen-survey');
+
+  // 川上さん指示(2026-06-24)：生成テキストが残っていれば結果画面へ直接戻す（すぐ投稿に進める）
+  if (_generatedText) {
+    var rt = document.getElementById('resultText');
+    if (rt) rt.value = _generatedText;
+    showScreen('screen-result');
+    return;
+  }
+
+  // 生成前なら、保存されたuiModeに応じてアンケートを入力ごと復元
+  if ((data.uiMode || _uiMode) === 'B') {
+    initSurveyB(true);
+    showScreen('screen-survey-b');
+  } else {
+    initSurvey(true);
+    showScreen('screen-survey');
+  }
 }
 
 // ============================================================
