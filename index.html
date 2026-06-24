@@ -857,7 +857,7 @@ body {
     <textarea class="result-textarea" id="resultText"></textarea>
     <button class="btn btn-primary" id="copyBtn" onclick="copyAndOpen()">完成！Googleに投稿する →</button>
     <button class="btn btn-secondary" onclick="regenerate()">もう一度生成する</button>
-    <button class="btn btn-ghost" onclick="editInput()">← 入力をやり直す</button>
+    <button class="btn btn-ghost" onclick="editInput()">← 入力画面に戻る</button>
   </div>
 
   <!-- 画面5: 完了 -->
@@ -868,7 +868,7 @@ body {
         <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" width="28" height="28"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
       <div style="font-size:17px;font-weight:800;color:#1a2535;margin-bottom:8px;">文章をコピーしました！</div>
-      <div style="font-size:13px;color:#64748b;line-height:1.7;">Googleのページに移動します。<br>口コミ欄に貼り付けて投稿してください。</div>
+      <div style="font-size:13px;color:#64748b;line-height:1.7;">口コミ投稿ページに移動します。<br>口コミ欄に貼り付けて投稿してください。</div>
       <div id="copyModalBar" style="margin-top:20px;height:4px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
         <div id="copyModalBarFill" style="height:100%;width:0%;background:var(--brand);border-radius:99px;transition:width 1.8s linear;"></div>
       </div>
@@ -882,27 +882,15 @@ body {
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <h2>文章をコピーしました！</h2>
+      <h2>文章をコピーしました</h2>
       <div class="copy-done-badge">📋 クリップボードに保存済み</div>
-      <p style="margin-top:16px;">あとは貼り付けるだけで投稿できます。</p>
-      <p style="margin-top:6px;font-size:0.86rem;color:var(--text-sub);">Googleのページが開かなかったときは、下のボタンを押してください。</p>
-      <button class="btn btn-primary" onclick="openGbp()" style="margin-top:14px;">Googleのページを開く →</button>
-      <div class="steps-guide">
-        <div class="guide-title">Googleへの投稿手順</div>
-        <div class="guide-step">
-          <div class="guide-step-num">1</div>
-          <div>開いたGoogleのページで<strong>星をタップ</strong></div>
-        </div>
-        <div class="guide-step">
-          <div class="guide-step-num">2</div>
-          <div>口コミ欄を<strong>長押し→「貼り付け」</strong>をタップ</div>
-        </div>
-        <div class="guide-step">
-          <div class="guide-step-num">3</div>
-          <div><strong>「投稿する」</strong>をタップして完了！</div>
-        </div>
+      <button class="btn btn-primary" onclick="openGbp()" style="margin-top:16px;">口コミ投稿ページを開く →</button>
+      <p style="margin-top:6px;font-size:0.8rem;color:var(--text-sub);">ページが開かないときはこのボタンを押してください</p>
+      <div class="steps-guide" style="margin-top:14px;">
+        <div class="guide-title">投稿手順</div>
+        <div style="font-size:0.82rem;color:var(--text-sub);line-height:1.6;">①星をタップ → ②口コミ欄を長押しして貼り付け → ③「投稿する」で完了</div>
       </div>
-      <button class="btn btn-secondary" onclick="restart()">最初からやり直す</button>
+      <button class="btn btn-secondary" onclick="editInput()" style="margin-top:10px;">← 入力画面に戻る</button>
     </div>
   </div>
 
