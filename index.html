@@ -1142,18 +1142,30 @@ function initSurveyB(resume) {
     ftEl.value = _bFreeText || '';   // 再開時の復元
     var isStudent = (_respondentRole === 'student');
     var isCABrand = (((_config && _config.brand) || 'kurofune') === 'ca');
-    if (isCABrand) {
-      ftEl.placeholder = isStudent
+    var fbB = isCABrand
+      ? (isStudent
         ? '例：\n・マイクラで作品を作るのが楽しい\n・わからないところは先生に聞ける\n・自分で考えて直せるようになった'
-        : '例：\n・マイクラが好きで楽しんで通っている\n・学校の先生に「考える力がついてきた」と褒められた\n・先生がいいタイミングで助けてくれる';
-    } else {
-      ftEl.placeholder = isStudent
+        : '例：\n・マイクラが好きで楽しんで通っている\n・学校の先生に「考える力がついてきた」と褒められた\n・先生がいいタイミングで助けてくれる')
+      : (isStudent
         ? '例：\n・先生が話しやすくて質問しやすい\n・苦手だった教科が少しずつわかるようになった\n・教室の雰囲気が良くて通いやすい'
-        : '例：\n・子どもが「先生が面白い」と言って楽しく通っている\n・親にも丁寧に向き合ってくれて相談しやすい\n・料金設定が分かりやすくてありがたい';
-    }
+        : '例：\n・子どもが「先生が面白い」と言って楽しく通っている\n・親にも丁寧に向き合ってくれて相談しやすい\n・料金設定が分かりやすくてありがたい');
+    ftEl.placeholder = pickPlaceholder(_respondentRole, fbB);
     ftEl.oninput = function() { _bFreeText = ftEl.value; _saveProgress(); updateGenerateBtnB(); };
   }
   updateGenerateBtnB();
+}
+
+// プレースホルダーをrole別配列からランダム1本選ぶ（GASが返した配列を使う）★2026-06-24
+// 配列が空なら fallback文字列を返す（従来のハードコード例）
+function pickPlaceholder(role, fallback) {
+  var arr = (role === 'student')
+    ? (_config && _config.placeholdersStudent)
+    : (_config && _config.placeholdersParent);
+  if (arr && arr.length > 0) {
+    var one = arr[Math.floor(Math.random() * arr.length)];
+    return '例：\n・' + one;
+  }
+  return fallback;
 }
 
 function updateGenerateBtnB() {
@@ -1306,15 +1318,14 @@ function renderStep() {
     var ta = document.createElement('textarea');
     ta.className = 'free-text-area';
     var epIsCA = (((_config && _config.brand) || 'kurofune') === 'ca');
-    ta.placeholder = (_config && _config.episodePlaceholder)
-      ? _config.episodePlaceholder
-      : (epIsCA
-        ? (_respondentRole === 'student'
-          ? '例：マイクラのプログラミングが楽しくて、毎週の授業を楽しみにしています。'
-          : '例：ゲームのプログラミングを楽しそうに学んでいて、先生もいいタイミングで助けてくれます。')
-        : (_respondentRole === 'student'
-          ? '例：先生が話しやすくて、分からないところを気軽に質問できる雰囲気です。'
-          : '例：子どもにも親にも丁寧に向き合って指導してくれて、相談もしやすいです。'));
+    var fbA = epIsCA
+      ? (_respondentRole === 'student'
+        ? '例：マイクラのプログラミングが楽しくて、毎週の授業を楽しみにしています。'
+        : '例：ゲームのプログラミングを楽しそうに学んでいて、先生もいいタイミングで助けてくれます。')
+      : (_respondentRole === 'student'
+        ? '例：先生が話しやすくて、分からないところを気軽に質問できる雰囲気です。'
+        : '例：子どもにも親にも丁寧に向き合って指導してくれて、相談もしやすいです。');
+    ta.placeholder = pickPlaceholder(_respondentRole, fbA);
     ta.value = _answers[_currentStep] || '';
     ta.addEventListener('input', function() {
       _answers[_currentStep] = ta.value;

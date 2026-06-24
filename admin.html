@@ -1142,12 +1142,25 @@ body {
           <textarea class="prompt-area" id="promptArea"></textarea>
         </div>
         <div class="field-row" style="margin-top:16px;" id="episodePlaceholderRow">
-          <label class="field-label">エピソード欄のサンプルテキスト（薄字ガイド）</label>
+          <label class="field-label">エピソード欄のサンプルテキスト（薄字ガイド）※旧設定</label>
           <input type="text" class="form-input" id="episodePlaceholderInput"
             placeholder="例：子どもにも親にも丁寧に向き合って指導してくれて、相談もしやすいです。">
-          <div class="field-hint">アンケート最終画面のテキストエリアに薄字で表示されます。空欄の場合はデフォルト文言を使用します。</div>
+          <div class="field-hint">旧式の1本設定です。下の「生徒用・保護者用」を使う場合は空欄にしてください（下が優先されます）。</div>
         </div>
         <button class="btn-save" onclick="savePrompt()">💾 保存する</button>
+        <div class="field-row" style="margin-top:24px;border-top:1px solid #e2e8f0;padding-top:18px;">
+          <label class="field-label">自由記述プレースホルダー（生徒用）</label>
+          <textarea class="prompt-area" id="phStudentInput" style="min-height:110px;"
+            placeholder="1行に1つ書いてください。例：&#10;先生が分かりやすくて質問しやすい&#10;苦手だった科目が分かるようになってきた"></textarea>
+          <div class="field-hint">複数行入れると、入力欄に表示される例文が毎回ランダムで変わります（重複した内容は避けてください）。</div>
+        </div>
+        <div class="field-row" style="margin-top:16px;">
+          <label class="field-label">自由記述プレースホルダー（保護者用）</label>
+          <textarea class="prompt-area" id="phParentInput" style="min-height:110px;"
+            placeholder="1行に1つ書いてください。例：&#10;子どもが楽しく通っている&#10;相談しやすくて安心して任せられる"></textarea>
+          <div class="field-hint">複数行入れると、入力欄に表示される例文が毎回ランダムで変わります（重複した内容は避けてください）。空欄ならデフォルトの例文が使われます。</div>
+        </div>
+        <button class="btn-save" onclick="savePlaceholders()">💾 プレースホルダーを保存する</button>
         <button class="btn-default" onclick="resetPrompt()">デフォルトに戻す</button>
       </div>
     </div>
@@ -2465,7 +2478,25 @@ function renderPromptArea() {
     var eps = _adminData.episodePlaceholders || {};
     document.getElementById('episodePlaceholderInput').value = eps[_promptBrand] || '';
   }
+  // role別プレースホルダーの復元（A/B共通・常に）
+  var phS = _adminData.placeholdersStudent || {};
+  var phP = _adminData.placeholdersParent || {};
+  var elS = document.getElementById('phStudentInput');
+  var elP = document.getElementById('phParentInput');
+  if (elS) elS.value = phS[_promptBrand] || '';
+  if (elP) elP.value = phP[_promptBrand] || '';
   renderPromptUiModeBanner();
+}
+
+// role別プレースホルダーの独立保存 ★2026-06-24
+function savePlaceholders() {
+  var ps = document.getElementById('phStudentInput').value;
+  var pp = document.getElementById('phParentInput').value;
+  if (!_adminData.placeholdersStudent) _adminData.placeholdersStudent = {};
+  if (!_adminData.placeholdersParent) _adminData.placeholdersParent = {};
+  _adminData.placeholdersStudent[_promptBrand] = ps;
+  _adminData.placeholdersParent[_promptBrand] = pp;
+  postSave({ action: 'saveAdminConfig', tenant: TENANT, type: 'placeholders', brand: _promptBrand, episodePlaceholdersStudent: ps, episodePlaceholdersParent: pp });
 }
 
 function savePrompt() {
