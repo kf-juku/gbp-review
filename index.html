@@ -1167,6 +1167,14 @@ function initSurveyB(resume) {
   var choices = (q0 && Array.isArray(q0.choices) && q0.choices.length > 0)
     ? q0.choices
     : (brand === 'ca' ? DEFAULT_B_CHOICES_CA : DEFAULT_B_CHOICES_KUROFUNE);
+  // 立場（生徒/保護者/その他）で選択肢を出し分ける（パターンAのrenderStepと同じ方式）
+  if (q0 && q0.roleCondition && q0.choicesByRole && _respondentRole) {
+    var roleKey = _respondentRole === 'parent' ? 'parent'
+                : _respondentRole === 'student' ? 'student'
+                : 'other';
+    var roleChoices = q0.choicesByRole[roleKey];
+    if (roleChoices && roleChoices.length > 0) { choices = roleChoices; }
+  }
 
   var listEl = document.getElementById('choicesAreaB');
   listEl.innerHTML = '';
