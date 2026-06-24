@@ -1162,8 +1162,14 @@ function pickPlaceholder(role, fallback) {
     ? (_config && _config.placeholdersStudent)
     : (_config && _config.placeholdersParent);
   if (arr && arr.length > 0) {
-    var one = arr[Math.floor(Math.random() * arr.length)];
-    return '例：\n・' + one;
+    // ランダムに最大3本選ぶ（足りなければある分だけ）
+    var pool = arr.slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+    }
+    var picked = pool.slice(0, Math.min(3, pool.length));
+    return '例：\n' + picked.map(function(x){ return '・' + x; }).join('\n');
   }
   return fallback;
 }
