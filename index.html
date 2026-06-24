@@ -988,6 +988,7 @@ var GENERATE_LIMIT = 5;
 var _moreInfoAsked = false;   // 追加質問を既に1回行ったか
 var _lastGenMode = 'A';       // 直近の生成モード（'A'/'B'）。追加質問後の再生成でどちらを呼ぶか判定
 var _moreInfoSelected = [];   // 追加質問で選んだ選択肢
+var _moreInfoSummary = '';    // 追加質問で足した内容（ログ用）
 
 // ============================================================
 // 初期化
@@ -1720,6 +1721,7 @@ function skipMoreInfo() {
 function runForcedGenerate(extraText) {
   if (_isGenerating) return;
   _moreInfoAsked = true;   // 追加質問は1回だけ
+  if (extraText) _moreInfoSummary = extraText;   // ログ用に追加質問の回答を保持
   _isGenerating = true;
   showScreen('screen-loading');
 
@@ -1874,6 +1876,26 @@ function showToast() {
 // ============================================================
 // ログ保存
 // ============================================================
+// 入力内容を人が読める1本の文字列にまとめる（A/B/追加質問すべて・ログ用）
+function buildInputSummary() {
+  var parts = [];
+  if (_uiMode === 'B') {
+    if (_bSelected && _bSelected.length) parts.push('テーマ:' + _bSelected.join('、'));
+    if (_bFreeText && _bFreeText.trim()) parts.push('自由記述:' + _bFreeText.trim());
+  } else {
+    for (var i = 0; i < _answers.length; i++) {
+      var a = _answers[i];
+      var ans = Array.isArray(a) ? a.join('、') : (a || '');
+      if (ans) {
+        var q = (_questions[i] && _questions[i].text) ? _questions[i].text : ('設問' + (i + 1));
+        parts.push(q + ':' + ans);
+      }
+    }
+  }
+  if (_moreInfoSummary) parts.push('追加:' + _moreInfoSummary);
+  return parts.join(' / ');
+}
+
 function saveLog(copied) {
   var payload = {
     action: 'saveLog',
@@ -1883,6 +1905,7 @@ function saveLog(copied) {
     answers: _answers.map(function(a) {
       return Array.isArray(a) ? a.join('、') : (a || '');
     }),
+    inputSummary: buildInputSummary(),
     generatedText: _generatedText,
     copied: copied ? true : false,
     campaignActive: _campaignActive,
@@ -1947,6 +1970,7 @@ function restart() {
   _bFreeText = '';
   _moreInfoAsked = false;
   _moreInfoSelected = [];
+  _moreInfoSummary = '';
   var nameInput = document.getElementById('nameInput');
   if (nameInput) nameInput.value = '';
   document.getElementById('nameNextBtn').disabled = true;
