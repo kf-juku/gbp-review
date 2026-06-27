@@ -936,7 +936,7 @@ body {
       <textarea id="moreInfoFree" rows="4" class="free-text-area"></textarea>
     </div>
     <button class="btn btn-primary" id="moreInfoBtn" onclick="submitMoreInfo()" style="margin-top:14px;">この内容で文章を作る →</button>
-    <button class="btn btn-ghost" onclick="skipMoreInfo()" style="margin-top:8px;">今の内容のまま作る</button>
+    <button class="btn btn-ghost" onclick="backToSurveyFromMoreInfo()" style="margin-top:8px;">← 入力に戻る</button>
   </div>
 
   <div class="screen" id="screen-error">
@@ -1720,9 +1720,13 @@ function submitMoreInfo() {
   runForcedGenerate(extraText);
 }
 
-// 追加質問をスキップして今の内容のまま必ず生成
-function skipMoreInfo() {
-  runForcedGenerate('');
+// 追加質問で「入力に戻る」：追加質問の選択は破棄し、元のアンケート入力（テーマ・自由記述）は保持して戻る（川上さん指示2026-06-27）
+function backToSurveyFromMoreInfo() {
+  _moreInfoSelected = [];   // 追加質問の選択は破棄
+  _moreInfoSummary  = '';
+  // 直近の生成モードに応じて正しいアンケート画面へ。元の入力は各画面側で保持されている
+  if (_lastGenMode === 'B') backToSurveyB();
+  else                      backToSurveyA();
 }
 
 // 追加質問後の再生成：元入力に追記して forceGenerate で送信。生成回数にはカウントしない（仕様§13-3-5）。
